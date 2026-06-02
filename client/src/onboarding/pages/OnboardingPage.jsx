@@ -38,10 +38,28 @@ const INITIAL_DATA = {
   branding: {},
 };
 
-function isSectionComplete(sectionData) {
-  if (!sectionData) return false;
-  if (Array.isArray(sectionData)) return sectionData.length > 0;
-  return Object.keys(sectionData).length > 0;
+function isStepComplete(key, data) {
+  if (!data) return false;
+  switch (key) {
+    case 'hero':
+      return !!(data.headline && data.subheadline && data.ctaText);
+    case 'services':
+      return data.length > 0 && data.every((s) => s.name);
+    case 'products':
+      return false;
+    case 'faq':
+      return data.length > 0 && data.every((f) => f.question);
+    case 'socialLinks':
+      return Object.values(data || {}).some((v) => v);
+    case 'branding':
+      return !!(data.businessName && data.description);
+    default:
+      return false;
+  }
+}
+
+function getCompletedArray(formData) {
+  return STEPS.map((s) => isStepComplete(s.key, formData[s.key]));
 }
 
 function OnboardingPage() {
@@ -52,8 +70,9 @@ function OnboardingPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [saveStatus, setSaveStatus] = useState('idle');
-  const [completed, setCompleted] = useState(false);
+  const [finished, setFinished] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [showIntro, setShowIntro] = useState(false);
 
   const formDataRef = useRef(formData);
   formDataRef.current = formData;
@@ -64,27 +83,34 @@ function OnboardingPage() {
         const clientData = await getClientByToken(hash);
         setClient(clientData);
 
-        if (clientData.form_data && Object.keys(clientData.form_data).length > 0) {
-          const saved = { ...clientData.form_data };
+        const saved = clientData.form_data || {};
 
-          if (saved.colors) {
-            saved.branding = { ...(saved.branding || {}), ...saved.colors };
-            delete saved.colors;
+        if (!saved.intro_accepted) {
+          setShowIntro(true);
+        }
+
+        if (Object.keys(saved).length > 0) {
+          const clean = { ...saved };
+
+          if (clean.colors) {
+            clean.branding = { ...(clean.branding || {}), ...clean.colors };
+            delete clean.colors;
           }
 
-          const savedStep = saved.current_step;
-          delete saved.current_step;
+          delete clean.current_step;
+          delete clean.intro_accepted;
 
-          const merged = { ...INITIAL_DATA, ...saved };
-          setFormData(merged);
+          setFormData({ ...INITIAL_DATA, ...clean });
+        }
 
-          if (savedStep !== undefined && savedStep >= 0 && savedStep < STEPS.length) {
-            setStep(savedStep);
-          }
+        const lsStep = localStorage.getItem('ons_step_' + hash);
+        if (lsStep !== null) {
+          const n = Number(lsStep);
+          if (n >= 0 && n < STEPS.length) setStep(n);
         }
 
         if (clientData.status === 'completed') {
-          setCompleted(true);
+          setFinished(true);
         }
       } catch (err) {
         setError(
@@ -105,15 +131,14 @@ function OnboardingPage() {
     async (data) => {
       setSaveStatus('saving');
       try {
-        const dataWithStep = { ...data, current_step: step };
-        await saveOnboardingData(hash, dataWithStep);
+        await saveOnboardingData(hash, data);
         setSaveStatus('saved');
         setTimeout(() => setSaveStatus('idle'), 2000);
       } catch {
         setSaveStatus('error');
       }
     },
-    [hash, step]
+    [hash]
   );
 
   function triggerSave(data) {
@@ -129,26 +154,38 @@ function OnboardingPage() {
     });
   }
 
-  function flushAndGo(targetStep) {
+  function goToStep(targetStep) {
     if (saveTimeoutRef.current) {
       clearTimeout(saveTimeoutRef.current);
       save(formDataRef.current);
     }
     if (targetStep >= 0 && targetStep < STEPS.length) {
       setStep(targetStep);
+      localStorage.setItem('ons_step_' + hash, targetStep);
     } else {
-      setCompleted(true);
+      setFinished(true);
     }
     setMenuOpen(false);
   }
 
   function nextStep() {
-    flushAndGo(step < STEPS.length - 1 ? step + 1 : -1);
+    goToStep(step < STEPS.length - 1 ? step + 1 : -1);
   }
 
   function prevStep() {
-    flushAndGo(step - 1);
+    goToStep(step - 1);
   }
+
+  async function acceptIntro() {
+    try {
+      await saveOnboardingData(hash, { ...formData, intro_accepted: true });
+    } catch {
+      // non-blocking
+    }
+    setShowIntro(false);
+  }
+
+  const completedArray = getCompletedArray(formData);
 
   if (loading) {
     return (
@@ -175,7 +212,7 @@ function OnboardingPage() {
     );
   }
 
-  if (completed) {
+  if (finished) {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
         <div className="text-center max-w-md">
@@ -194,6 +231,32 @@ function OnboardingPage() {
     );
   }
 
+  if (showIntro) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+        <div className="text-center max-w-md">
+          <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <CheckCircle className="text-blue-600" size={32} />
+          </div>
+          <h1 className="text-xl font-bold text-slate-800 mb-4">
+            Bienvenido al formulario de tu futura app
+          </h1>
+          <p className="text-slate-500 leading-relaxed mb-8">
+            Antes de comenzar tené en cuenta que no es obligatorio completar
+            todo. Pero mientras más completes, más rápido y acertado será el
+            resultado de tu sitio web.
+          </p>
+          <button
+            onClick={acceptIntro}
+            className="px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-base font-medium"
+          >
+            Entendido
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   const CurrentStepComponent = STEPS[step].component;
   const isLastStep = step === STEPS.length - 1;
 
@@ -201,7 +264,9 @@ function OnboardingPage() {
     <div className="min-h-screen bg-slate-50 flex flex-col">
       <header className="sticky top-0 z-30 bg-white border-b border-slate-200">
         <div className="flex items-center justify-between px-4 py-3">
-          <h1 className="text-base font-bold text-slate-800">Onboarding</h1>
+          <h1 className="text-base font-bold text-slate-800">
+            Datos de tu app
+          </h1>
           <div className="flex items-center gap-3">
             <SaveIndicator status={saveStatus} />
             <button
@@ -223,12 +288,12 @@ function OnboardingPage() {
               <div className="max-h-[60vh] overflow-y-auto px-4 py-3">
                 <div className="grid grid-cols-1 gap-1">
                   {STEPS.map((s, i) => {
-                    const complete = isSectionComplete(formData[s.key]);
+                    const complete = completedArray[i];
                     const isCurrent = i === step;
                     return (
                       <button
                         key={s.key}
-                        onClick={() => flushAndGo(i)}
+                        onClick={() => goToStep(i)}
                         className={`flex items-center gap-3 p-2.5 rounded-lg text-left transition-colors ${
                           isCurrent
                             ? 'bg-blue-50'
@@ -237,14 +302,18 @@ function OnboardingPage() {
                       >
                         <div
                           className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium shrink-0 ${
-                            complete
+                            complete || i < step
                               ? 'bg-green-500 text-white'
                               : isCurrent
                               ? 'bg-blue-600 text-white'
                               : 'bg-slate-200 text-slate-400'
                           }`}
                         >
-                          {complete ? <Check size={14} /> : i + 1}
+                          {complete || i < step ? (
+                            <Check size={14} />
+                          ) : (
+                            i + 1
+                          )}
                         </div>
                         <span
                           className={`text-sm ${
@@ -269,13 +338,13 @@ function OnboardingPage() {
 
       <div className="px-4 py-3 bg-slate-50">
         <StepIndicator
-          steps={STEPS.map((s) => ({ key: s.key }))}
+          totalSteps={STEPS.length}
           currentStep={step}
-          formData={formData}
+          completed={completedArray}
         />
       </div>
 
-      <main className="flex-1 max-w-2xl mx-auto w-full px-4 pb-24">
+      <main className="flex-1 max-w-2xl mx-auto w-full px-4 pb-28">
         <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4 md:p-6">
           <h2 className="text-base font-semibold text-slate-800 mb-4">
             {STEPS[step].label}
@@ -298,33 +367,33 @@ function OnboardingPage() {
       </main>
 
       <footer className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 z-30">
-        <div className="flex items-center justify-between px-4 py-3">
+        <div className="flex items-center justify-between px-4 py-4">
           <button
             onClick={prevStep}
             disabled={step === 0}
-            className="flex items-center gap-1.5 px-3 py-2 text-sm text-slate-600 hover:text-slate-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+            className="flex items-center gap-1.5 px-3 py-2.5 text-base text-slate-600 hover:text-slate-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
           >
-            <ArrowLeft size={16} />
+            <ArrowLeft size={18} />
             <span className="hidden sm:inline">Anterior</span>
           </button>
 
-          <span className="text-xs text-slate-400 font-medium">
+          <span className="text-sm text-slate-400 font-medium">
             {step + 1} / {STEPS.length}
           </span>
 
           <button
             onClick={nextStep}
-            className="flex items-center gap-1.5 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+            className="flex items-center gap-1.5 px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-base font-medium"
           >
             {isLastStep ? (
               <>
-                <CheckCircle size={16} />
+                <CheckCircle size={18} />
                 Finalizar
               </>
             ) : (
               <>
                 <span className="hidden sm:inline">Siguiente</span>
-                <ArrowRight size={16} />
+                <ArrowRight size={18} />
               </>
             )}
           </button>
