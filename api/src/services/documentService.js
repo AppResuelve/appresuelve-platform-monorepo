@@ -18,7 +18,9 @@ export async function uploadDocument(token, file, documentType) {
   );
 
   const storageProvider =
-    process.env.STORAGE_PROVIDER === 'cloudinary' ? 'cloudinary' : 'local';
+    process.env.NODE_ENV === 'production' || process.env.STORAGE_PROVIDER === 'cloudinary'
+      ? 'cloudinary'
+      : 'local';
 
   const document = await ClientDocument.create({
     clientId: client.id,

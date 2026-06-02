@@ -7,9 +7,16 @@ import routes from './routes/index.js';
 
 const app = express();
 
-const allowedOrigins = process.env.CORS_ORIGINS
-  ? process.env.CORS_ORIGINS.split(',')
-  : ['http://localhost:5173', 'http://localhost:5174'];
+const PRODUCTION_ORIGINS = [
+  'https://admin.appresuelve.site',
+  'https://onboarding.appresuelve.site',
+];
+
+const isProduction = process.env.NODE_ENV === 'production';
+
+const allowedOrigins = isProduction
+  ? PRODUCTION_ORIGINS
+  : (process.env.CORS_ORIGINS?.split(',') || ['http://localhost:5173', 'http://localhost:5174']);
 
 app.use(
   cors({
