@@ -41,7 +41,7 @@ export async function uploadDocument(token, file, documentType) {
     file_url: document.fileUrl,
     file_size: document.fileSize,
     document_type: document.documentType,
-    uploaded_at: document.uploadedAt,
+    uploaded_at: document.createdAt,
   };
 }
 
@@ -54,15 +54,6 @@ export async function listByToken(token) {
 
   const documents = await ClientDocument.findAll({
     where: { clientId: client.id },
-    attributes: [
-      'id',
-      'documentType',
-      'name',
-      'mimeType',
-      'fileUrl',
-      'fileSize',
-      'createdAt',
-    ],
     order: [['uploaded_at', 'DESC']],
   });
 
@@ -73,7 +64,7 @@ export async function listByToken(token) {
     mime_type: d.mimeType,
     file_url: d.fileUrl,
     file_size: d.fileSize,
-      uploaded_at: d.createdAt,
+    uploaded_at: d.createdAt,
   }));
 }
 
