@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Copy, ExternalLink, Users, Clock } from 'lucide-react';
 
-const API_URL = import.meta.env.VITE_API_URL || '/api/clients';
+const API_BASE = import.meta.env.VITE_API_URL || '/api';
+const CLIENTS_URL = `${API_BASE}/clients`;
 const ONBOARDING_URL = import.meta.env.VITE_ONBOARDING_URL || 'http://localhost:5173';
 
 function Dashboard() {
@@ -18,7 +19,7 @@ function Dashboard() {
 
   async function fetchClients() {
     try {
-      const res = await fetch(API_URL);
+      const res = await fetch(CLIENTS_URL);
       const data = await res.json();
       setClients(data);
     } catch (error) {
@@ -32,7 +33,7 @@ function Dashboard() {
     e.preventDefault();
     setCreating(true);
     try {
-      const res = await fetch(API_URL, {
+      const res = await fetch(CLIENTS_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
