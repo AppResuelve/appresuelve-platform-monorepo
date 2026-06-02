@@ -61,7 +61,7 @@ export async function listByToken(token) {
       'mimeType',
       'fileUrl',
       'fileSize',
-      'uploadedAt',
+      'createdAt',
     ],
     order: [['uploaded_at', 'DESC']],
   });
@@ -73,7 +73,7 @@ export async function listByToken(token) {
     mime_type: d.mimeType,
     file_url: d.fileUrl,
     file_size: d.fileSize,
-    uploaded_at: d.uploadedAt,
+      uploaded_at: d.createdAt,
   }));
 }
 
