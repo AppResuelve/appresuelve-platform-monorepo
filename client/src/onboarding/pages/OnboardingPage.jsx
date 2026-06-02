@@ -1,7 +1,16 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, CheckCircle, Loader2, AlertCircle } from 'lucide-react';
-import { getClientByToken, getOnboardingData, saveOnboardingData } from '@appresuelve/shared';
+import {
+  ArrowLeft,
+  ArrowRight,
+  CheckCircle,
+  Check,
+  Loader2,
+  AlertCircle,
+  Menu,
+  X,
+} from 'lucide-react';
+import { getClientByToken, saveOnboardingData } from '@appresuelve/shared';
 import StepIndicator from '../components/StepIndicator';
 import HeroStep from '../components/HeroStep';
 import ServicesStep from '../components/ServicesStep';
@@ -29,6 +38,12 @@ const INITIAL_DATA = {
   branding: {},
 };
 
+function isSectionComplete(sectionData) {
+  if (!sectionData) return false;
+  if (Array.isArray(sectionData)) return sectionData.length > 0;
+  return Object.keys(sectionData).length > 0;
+}
+
 function OnboardingPage() {
   const { hash } = useParams();
   const [step, setStep] = useState(0);
@@ -38,6 +53,7 @@ function OnboardingPage() {
   const [error, setError] = useState(null);
   const [saveStatus, setSaveStatus] = useState('idle');
   const [completed, setCompleted] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const formDataRef = useRef(formData);
   formDataRef.current = formData;
@@ -49,13 +65,22 @@ function OnboardingPage() {
         setClient(clientData);
 
         if (clientData.form_data && Object.keys(clientData.form_data).length > 0) {
-          const saved = clientData.form_data;
+          const saved = { ...clientData.form_data };
+
           if (saved.colors) {
             saved.branding = { ...(saved.branding || {}), ...saved.colors };
             delete saved.colors;
           }
+
+          const savedStep = saved.current_step;
+          delete saved.current_step;
+
           const merged = { ...INITIAL_DATA, ...saved };
           setFormData(merged);
+
+          if (savedStep !== undefined && savedStep >= 0 && savedStep < STEPS.length) {
+            setStep(savedStep);
+          }
         }
 
         if (clientData.status === 'completed') {
@@ -76,16 +101,20 @@ function OnboardingPage() {
 
   const saveTimeoutRef = useRef(null);
 
-  const save = useCallback(async (data) => {
-    setSaveStatus('saving');
-    try {
-      await saveOnboardingData(hash, data);
-      setSaveStatus('saved');
-      setTimeout(() => setSaveStatus('idle'), 2000);
-    } catch {
-      setSaveStatus('error');
-    }
-  }, [hash]);
+  const save = useCallback(
+    async (data) => {
+      setSaveStatus('saving');
+      try {
+        const dataWithStep = { ...data, current_step: step };
+        await saveOnboardingData(hash, dataWithStep);
+        setSaveStatus('saved');
+        setTimeout(() => setSaveStatus('idle'), 2000);
+      } catch {
+        setSaveStatus('error');
+      }
+    },
+    [hash, step]
+  );
 
   function triggerSave(data) {
     if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
@@ -93,28 +122,32 @@ function OnboardingPage() {
   }
 
   function updateSection(section, data) {
-    setFormData(prev => {
+    setFormData((prev) => {
       const next = { ...prev, [section]: data };
       triggerSave(next);
       return next;
     });
   }
 
-  function nextStep() {
+  function flushAndGo(targetStep) {
     if (saveTimeoutRef.current) {
       clearTimeout(saveTimeoutRef.current);
       save(formDataRef.current);
     }
-
-    if (step < STEPS.length - 1) {
-      setStep(step + 1);
+    if (targetStep >= 0 && targetStep < STEPS.length) {
+      setStep(targetStep);
     } else {
       setCompleted(true);
     }
+    setMenuOpen(false);
+  }
+
+  function nextStep() {
+    flushAndGo(step < STEPS.length - 1 ? step + 1 : -1);
   }
 
   function prevStep() {
-    if (step > 0) setStep(step - 1);
+    flushAndGo(step - 1);
   }
 
   if (loading) {
@@ -165,17 +198,86 @@ function OnboardingPage() {
   const isLastStep = step === STEPS.length - 1;
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <div className="max-w-2xl mx-auto px-4 py-8 md:py-12">
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-xl font-bold text-slate-800">Onboarding</h1>
-          <SaveIndicator status={saveStatus} />
+    <div className="min-h-screen bg-slate-50 flex flex-col">
+      <header className="sticky top-0 z-30 bg-white border-b border-slate-200">
+        <div className="flex items-center justify-between px-4 py-3">
+          <h1 className="text-base font-bold text-slate-800">Onboarding</h1>
+          <div className="flex items-center gap-3">
+            <SaveIndicator status={saveStatus} />
+            <button
+              onClick={() => setMenuOpen(!menuOpen)}
+              className="p-1.5 text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors"
+            >
+              {menuOpen ? <X size={20} /> : <Menu size={20} />}
+            </button>
+          </div>
         </div>
 
-        <StepIndicator currentStep={step} formData={formData} />
+        {menuOpen && (
+          <>
+            <div
+              className="fixed inset-0 z-20"
+              onClick={() => setMenuOpen(false)}
+            />
+            <div className="absolute top-full left-0 right-0 z-30 bg-white border-b border-slate-200 shadow-lg">
+              <div className="max-h-[60vh] overflow-y-auto px-4 py-3">
+                <div className="grid grid-cols-1 gap-1">
+                  {STEPS.map((s, i) => {
+                    const complete = isSectionComplete(formData[s.key]);
+                    const isCurrent = i === step;
+                    return (
+                      <button
+                        key={s.key}
+                        onClick={() => flushAndGo(i)}
+                        className={`flex items-center gap-3 p-2.5 rounded-lg text-left transition-colors ${
+                          isCurrent
+                            ? 'bg-blue-50'
+                            : 'hover:bg-slate-50'
+                        }`}
+                      >
+                        <div
+                          className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium shrink-0 ${
+                            complete
+                              ? 'bg-green-500 text-white'
+                              : isCurrent
+                              ? 'bg-blue-600 text-white'
+                              : 'bg-slate-200 text-slate-400'
+                          }`}
+                        >
+                          {complete ? <Check size={14} /> : i + 1}
+                        </div>
+                        <span
+                          className={`text-sm ${
+                            isCurrent
+                              ? 'text-blue-700 font-medium'
+                              : complete
+                              ? 'text-green-700'
+                              : 'text-slate-500'
+                          }`}
+                        >
+                          {s.label}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          </>
+        )}
+      </header>
 
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 md:p-8">
-          <h2 className="text-lg font-semibold text-slate-800 mb-6">
+      <div className="px-4 py-3 bg-slate-50">
+        <StepIndicator
+          steps={STEPS.map((s) => ({ key: s.key }))}
+          currentStep={step}
+          formData={formData}
+        />
+      </div>
+
+      <main className="flex-1 max-w-2xl mx-auto w-full px-4 pb-24">
+        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4 md:p-6">
+          <h2 className="text-base font-semibold text-slate-800 mb-4">
             {STEPS[step].label}
           </h2>
 
@@ -192,45 +294,42 @@ function OnboardingPage() {
               token={hash}
             />
           )}
-
-          <div className="flex items-center justify-between mt-8 pt-6 border-t border-slate-100">
-            <button
-              onClick={prevStep}
-              disabled={step === 0}
-              className="flex items-center gap-2 px-4 py-2 text-slate-600 hover:text-slate-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-            >
-              <ArrowLeft size={18} />
-              Anterior
-            </button>
-
-            <div className="flex items-center gap-3">
-              <span className="text-sm text-slate-400">
-                Paso {step + 1} de {STEPS.length}
-              </span>
-              <button
-                onClick={nextStep}
-                className="flex items-center gap-2 px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
-              >
-                {isLastStep ? (
-                  <>
-                    <CheckCircle size={18} />
-                    Finalizar
-                  </>
-                ) : (
-                  <>
-                    Siguiente
-                    <ArrowRight size={18} />
-                  </>
-                )}
-              </button>
-            </div>
-          </div>
         </div>
+      </main>
 
-        <p className="text-center text-xs text-slate-400 mt-6">
-          Los cambios se guardan automáticamente. Podés volver en cualquier momento.
-        </p>
-      </div>
+      <footer className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 z-30">
+        <div className="flex items-center justify-between px-4 py-3">
+          <button
+            onClick={prevStep}
+            disabled={step === 0}
+            className="flex items-center gap-1.5 px-3 py-2 text-sm text-slate-600 hover:text-slate-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+          >
+            <ArrowLeft size={16} />
+            <span className="hidden sm:inline">Anterior</span>
+          </button>
+
+          <span className="text-xs text-slate-400 font-medium">
+            {step + 1} / {STEPS.length}
+          </span>
+
+          <button
+            onClick={nextStep}
+            className="flex items-center gap-1.5 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+          >
+            {isLastStep ? (
+              <>
+                <CheckCircle size={16} />
+                Finalizar
+              </>
+            ) : (
+              <>
+                <span className="hidden sm:inline">Siguiente</span>
+                <ArrowRight size={16} />
+              </>
+            )}
+          </button>
+        </div>
+      </footer>
     </div>
   );
 }
