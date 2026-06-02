@@ -48,7 +48,7 @@ export async function createInvite({ businessName, email }) {
     email: client.email,
     invite_token: client.inviteToken,
     status: client.status,
-    created_at: client.createdAt,
+    created_at: client.createdAt ? new Date(client.createdAt).toISOString() : null,
     invite_link: inviteLink,
   };
 }
@@ -81,7 +81,7 @@ export async function findAllWithCompletion() {
       email: client.email,
       invite_token: client.inviteToken,
       status: client.status,
-      created_at: client.createdAt,
+      created_at: client.createdAt ? new Date(client.createdAt).toISOString() : null,
       form_data: formData,
       documents: docs.map((d) => ({
         id: d.id,
@@ -120,7 +120,7 @@ export async function findByToken(token) {
     business_name: client.businessName,
     email: client.email,
     status: client.status,
-    created_at: client.createdAt,
+    created_at: client.createdAt ? new Date(client.createdAt).toISOString() : null,
     form_data: client.form ? client.form.data : null,
     documents: client.documents.map((d) => ({
       id: d.id,

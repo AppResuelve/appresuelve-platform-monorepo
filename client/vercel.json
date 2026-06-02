@@ -1,5 +1,8 @@
 {
   "installCommand": "cd .. && pnpm install --filter @appresuelve/client --frozen-lockfile",
   "buildCommand": "cd .. && pnpm --filter @appresuelve/client build",
-  "outputDirectory": "dist"
+  "outputDirectory": "dist",
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
 }
