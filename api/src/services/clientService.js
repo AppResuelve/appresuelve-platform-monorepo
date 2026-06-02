@@ -67,7 +67,7 @@ export async function findAllWithCompletion() {
         required: false,
       },
     ],
-    order: [['createdAt', 'DESC']],
+    order: [['created_at', 'DESC']],
   });
 
   return clients.map((client) => {

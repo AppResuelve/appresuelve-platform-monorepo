@@ -63,7 +63,7 @@ export async function listByToken(token) {
       'fileSize',
       'uploadedAt',
     ],
-    order: [['uploadedAt', 'DESC']],
+    order: [['uploaded_at', 'DESC']],
   });
 
   return documents.map((d) => d.toJSON());
