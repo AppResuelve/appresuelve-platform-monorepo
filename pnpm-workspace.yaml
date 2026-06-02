@@ -1,0 +1,7 @@
+packages:
+  - '.'
+  - 'api'
+  - 'packages/*'
+
+allowBuilds:
+  esbuild: true
