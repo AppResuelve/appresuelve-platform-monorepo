@@ -29,7 +29,7 @@ async function deleteFile(token, documentId) {
   return res.json();
 }
 
-function FileUpload({ token, documentType, files, onChange }) {
+function FileUpload({ token, documentType, files, onChange, accept }) {
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef(null);
 
@@ -88,7 +88,7 @@ function FileUpload({ token, documentType, files, onChange }) {
           <div className="flex flex-col items-center gap-2 text-slate-500">
             <Upload size={32} />
             <span className="font-medium">Arrastrá archivos o hacé click</span>
-            <span className="text-sm">PNG, JPG, PDF hasta 50MB</span>
+            <span className="text-sm">{accept ? accept.replace(/\./g, '').replace(/,/g, ', ').toUpperCase() : 'PNG, JPG, PDF'} hasta 50MB</span>
           </div>
         )}
         <input
@@ -96,7 +96,7 @@ function FileUpload({ token, documentType, files, onChange }) {
           type="file"
           className="hidden"
           multiple
-          accept="image/*,.pdf"
+          accept={accept || 'image/*,.pdf'}
           onChange={(e) => {
             if (e.target.files.length) handleFiles(e.target.files);
             e.target.value = '';

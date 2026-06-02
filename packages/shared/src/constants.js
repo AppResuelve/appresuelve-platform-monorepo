@@ -1,4 +1,4 @@
-export const FORM_SECTIONS = ['hero', 'services', 'faq', 'colors', 'socialLinks', 'branding'];
+export const FORM_SECTIONS = ['hero', 'services', 'products', 'faq', 'socialLinks', 'branding'];
 
 export const CLIENT_STATUS = {
   PENDING: 'pending',
@@ -8,8 +8,11 @@ export const CLIENT_STATUS = {
 
 export const DOCUMENT_TYPES = {
   LOGO: 'logo',
+  FAVICON: 'favicon',
   CATALOG: 'catalog',
   PHOTOS: 'photos',
   FILES: 'files',
-  GENERAL: 'general'
+  GENERAL: 'general',
+  PRODUCT_FILES: 'product_files',
+  PRODUCT_IMAGES: 'product_images',
 };

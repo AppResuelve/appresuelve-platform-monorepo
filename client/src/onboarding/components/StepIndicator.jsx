@@ -4,8 +4,8 @@ import { Check } from 'lucide-react';
 const STEPS = [
   { key: 'hero', label: 'Hero' },
   { key: 'services', label: 'Servicios' },
+  { key: 'products', label: 'Productos' },
   { key: 'faq', label: 'FAQ' },
-  { key: 'colors', label: 'Colores' },
   { key: 'socialLinks', label: 'Redes' },
   { key: 'branding', label: 'Branding' },
 ];

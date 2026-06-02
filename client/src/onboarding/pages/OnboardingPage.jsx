@@ -5,8 +5,8 @@ import { getClientByToken, getOnboardingData, saveOnboardingData } from '@appres
 import StepIndicator from '../components/StepIndicator';
 import HeroStep from '../components/HeroStep';
 import ServicesStep from '../components/ServicesStep';
+import ProductsStep from '../components/ProductsStep';
 import FaqStep from '../components/FaqStep';
-import ColorsStep from '../components/ColorsStep';
 import SocialLinksStep from '../components/SocialLinksStep';
 import BrandingStep from '../components/BrandingStep';
 import SaveIndicator from '../../shared/components/SaveIndicator';
@@ -14,8 +14,8 @@ import SaveIndicator from '../../shared/components/SaveIndicator';
 const STEPS = [
   { key: 'hero', label: 'Hero', component: HeroStep },
   { key: 'services', label: 'Servicios', component: ServicesStep },
+  { key: 'products', label: 'Productos', component: ProductsStep },
   { key: 'faq', label: 'FAQ', component: FaqStep },
-  { key: 'colors', label: 'Colores', component: ColorsStep },
   { key: 'socialLinks', label: 'Redes Sociales', component: SocialLinksStep },
   { key: 'branding', label: 'Branding', component: BrandingStep },
 ];
@@ -23,8 +23,8 @@ const STEPS = [
 const INITIAL_DATA = {
   hero: {},
   services: [],
+  products: {},
   faq: [],
-  colors: {},
   socialLinks: {},
   branding: {},
 };
@@ -49,7 +49,12 @@ function OnboardingPage() {
         setClient(clientData);
 
         if (clientData.form_data && Object.keys(clientData.form_data).length > 0) {
-          const merged = { ...INITIAL_DATA, ...clientData.form_data };
+          const saved = clientData.form_data;
+          if (saved.colors) {
+            saved.branding = { ...(saved.branding || {}), ...saved.colors };
+            delete saved.colors;
+          }
+          const merged = { ...INITIAL_DATA, ...saved };
           setFormData(merged);
         }
 
