@@ -1,5 +1,5 @@
 {
+  "installCommand": "pnpm install --filter @appresuelve/client",
   "buildCommand": "pnpm --filter @appresuelve/client build",
-  "outputDirectory": "client/dist",
-  "framework": "vite"
+  "outputDirectory": "client/dist"
 }
