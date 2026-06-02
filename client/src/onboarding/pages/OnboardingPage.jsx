@@ -62,6 +62,76 @@ function getCompletedArray(formData) {
   return STEPS.map((s) => isStepComplete(s.key, formData[s.key]));
 }
 
+function SidebarStep({ index, label, isCurrent, isComplete, isPast, onClick }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-colors ${
+        isCurrent ? 'bg-blue-50' : 'hover:bg-slate-50'
+      }`}
+    >
+      <div
+        className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium shrink-0 ${
+          isComplete || isPast
+            ? 'bg-green-500 text-white'
+            : isCurrent
+            ? 'bg-blue-600 text-white'
+            : 'bg-slate-200 text-slate-400'
+        }`}
+      >
+        {isComplete || isPast ? <Check size={14} /> : index + 1}
+      </div>
+      <span
+        className={`text-sm ${
+          isCurrent
+            ? 'text-blue-700 font-medium'
+            : isComplete
+            ? 'text-green-700'
+            : 'text-slate-500'
+        }`}
+      >
+        {label}
+      </span>
+    </button>
+  );
+}
+
+function StepFooter({ step, totalSteps, isLastStep, onPrev, onNext }) {
+  return (
+    <div className="flex items-center justify-between px-4 py-4">
+      <button
+        onClick={onPrev}
+        disabled={step === 0}
+        className="flex items-center gap-1.5 px-3 py-2.5 text-base text-slate-600 hover:text-slate-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+      >
+        <ArrowLeft size={18} />
+        <span className="hidden sm:inline">Anterior</span>
+      </button>
+
+      <span className="text-sm text-slate-400 font-medium">
+        {step + 1} / {totalSteps}
+      </span>
+
+      <button
+        onClick={onNext}
+        className="flex items-center gap-1.5 px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-base font-medium"
+      >
+        {isLastStep ? (
+          <>
+            <CheckCircle size={18} />
+            Finalizar
+          </>
+        ) : (
+          <>
+            <span className="hidden sm:inline">Siguiente</span>
+            <ArrowRight size={18} />
+          </>
+        )}
+      </button>
+    </div>
+  );
+}
+
 function OnboardingPage() {
   const { hash } = useParams();
   const [step, setStep] = useState(0);
@@ -260,9 +330,31 @@ function OnboardingPage() {
   const CurrentStepComponent = STEPS[step].component;
   const isLastStep = step === STEPS.length - 1;
 
+  const renderContent = () => (
+    <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4 md:p-6">
+      <h2 className="text-base font-semibold text-slate-800 mb-4 md:hidden">
+        {STEPS[step].label}
+      </h2>
+      {step === STEPS.length - 1 ? (
+        <BrandingStep
+          data={formData.branding}
+          onChange={(data) => updateSection('branding', data)}
+          token={hash}
+        />
+      ) : (
+        <CurrentStepComponent
+          data={formData[STEPS[step].key]}
+          onChange={(data) => updateSection(STEPS[step].key, data)}
+          token={hash}
+        />
+      )}
+    </div>
+  );
+
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col">
-      <header className="sticky top-0 z-30 bg-white border-b border-slate-200">
+    <div className="min-h-screen bg-slate-50">
+      {/* ========== MOBILE: Top bar ========== */}
+      <header className="md:hidden sticky top-0 z-30 bg-white border-b border-slate-200">
         <div className="flex items-center justify-between px-4 py-3">
           <h1 className="text-base font-bold text-slate-800">
             Datos de tu app
@@ -287,48 +379,17 @@ function OnboardingPage() {
             <div className="absolute top-full left-0 right-0 z-30 bg-white border-b border-slate-200 shadow-lg">
               <div className="max-h-[60vh] overflow-y-auto px-4 py-3">
                 <div className="grid grid-cols-1 gap-1">
-                  {STEPS.map((s, i) => {
-                    const complete = completedArray[i];
-                    const isCurrent = i === step;
-                    return (
-                      <button
-                        key={s.key}
-                        onClick={() => goToStep(i)}
-                        className={`flex items-center gap-3 p-2.5 rounded-lg text-left transition-colors ${
-                          isCurrent
-                            ? 'bg-blue-50'
-                            : 'hover:bg-slate-50'
-                        }`}
-                      >
-                        <div
-                          className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium shrink-0 ${
-                            complete || i < step
-                              ? 'bg-green-500 text-white'
-                              : isCurrent
-                              ? 'bg-blue-600 text-white'
-                              : 'bg-slate-200 text-slate-400'
-                          }`}
-                        >
-                          {complete || i < step ? (
-                            <Check size={14} />
-                          ) : (
-                            i + 1
-                          )}
-                        </div>
-                        <span
-                          className={`text-sm ${
-                            isCurrent
-                              ? 'text-blue-700 font-medium'
-                              : complete
-                              ? 'text-green-700'
-                              : 'text-slate-500'
-                          }`}
-                        >
-                          {s.label}
-                        </span>
-                      </button>
-                    );
-                  })}
+                  {STEPS.map((s, i) => (
+                    <SidebarStep
+                      key={s.key}
+                      index={i}
+                      label={s.label}
+                      isCurrent={i === step}
+                      isComplete={completedArray[i]}
+                      isPast={i < step}
+                      onClick={() => goToStep(i)}
+                    />
+                  ))}
                 </div>
               </div>
             </div>
@@ -336,7 +397,8 @@ function OnboardingPage() {
         )}
       </header>
 
-      <div className="px-4 py-3 bg-slate-50">
+      {/* ========== MOBILE: Dots ========== */}
+      <div className="md:hidden px-4 py-3 bg-slate-50">
         <StepIndicator
           totalSteps={STEPS.length}
           currentStep={step}
@@ -344,61 +406,50 @@ function OnboardingPage() {
         />
       </div>
 
-      <main className="flex-1 max-w-2xl mx-auto w-full px-4 pb-28">
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4 md:p-6">
-          <h2 className="text-base font-semibold text-slate-800 mb-4">
-            {STEPS[step].label}
-          </h2>
+      {/* ========== LAYOUT ========== */}
+      <div className="flex flex-col md:flex-row">
+        {/* ========== DESKTOP: Sidebar ========== */}
+        <aside className="hidden md:flex md:flex-col md:w-56 md:sticky md:top-0 md:h-screen md:border-r md:border-slate-200 md:bg-white md:shrink-0">
+          <div className="px-4 py-4 border-b border-slate-100">
+            <h1 className="text-base font-bold text-slate-800 mb-1">
+              Datos de tu app
+            </h1>
+            <SaveIndicator status={saveStatus} />
+          </div>
+          <nav className="flex-1 overflow-y-auto px-3 py-3 space-y-0.5">
+            {STEPS.map((s, i) => (
+              <SidebarStep
+                key={s.key}
+                index={i}
+                label={s.label}
+                isCurrent={i === step}
+                isComplete={completedArray[i]}
+                isPast={i < step}
+                onClick={() => goToStep(i)}
+              />
+            ))}
+          </nav>
+        </aside>
 
-          {step === STEPS.length - 1 ? (
-            <BrandingStep
-              data={formData.branding}
-              onChange={(data) => updateSection('branding', data)}
-              token={hash}
-            />
-          ) : (
-            <CurrentStepComponent
-              data={formData[STEPS[step].key]}
-              onChange={(data) => updateSection(STEPS[step].key, data)}
-              token={hash}
-            />
-          )}
+        {/* ========== Content + Footer column ========== */}
+        <div className="flex-1 flex flex-col min-h-[calc(100vh-104px)] md:min-h-screen">
+          <main className="flex-1 max-w-2xl mx-auto w-full px-4 md:px-6 pt-4 md:pt-6 pb-28 md:pb-6">
+            {renderContent()}
+          </main>
+
+          <footer className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 z-30 md:static md:left-auto md:right-auto">
+            <div className="md:max-w-2xl md:mx-auto">
+              <StepFooter
+                step={step}
+                totalSteps={STEPS.length}
+                isLastStep={isLastStep}
+                onPrev={prevStep}
+                onNext={nextStep}
+              />
+            </div>
+          </footer>
         </div>
-      </main>
-
-      <footer className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 z-30">
-        <div className="flex items-center justify-between px-4 py-4">
-          <button
-            onClick={prevStep}
-            disabled={step === 0}
-            className="flex items-center gap-1.5 px-3 py-2.5 text-base text-slate-600 hover:text-slate-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-          >
-            <ArrowLeft size={18} />
-            <span className="hidden sm:inline">Anterior</span>
-          </button>
-
-          <span className="text-sm text-slate-400 font-medium">
-            {step + 1} / {STEPS.length}
-          </span>
-
-          <button
-            onClick={nextStep}
-            className="flex items-center gap-1.5 px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-base font-medium"
-          >
-            {isLastStep ? (
-              <>
-                <CheckCircle size={18} />
-                Finalizar
-              </>
-            ) : (
-              <>
-                <span className="hidden sm:inline">Siguiente</span>
-                <ArrowRight size={18} />
-              </>
-            )}
-          </button>
-        </div>
-      </footer>
+      </div>
     </div>
   );
 }
