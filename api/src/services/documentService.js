@@ -37,11 +37,11 @@ export async function uploadDocument(token, file, documentType) {
   return {
     id: document.id,
     name: document.name,
-    mimeType: document.mimeType,
-    fileUrl: document.fileUrl,
-    fileSize: document.fileSize,
-    documentType: document.documentType,
-    uploadedAt: document.uploadedAt,
+    mime_type: document.mimeType,
+    file_url: document.fileUrl,
+    file_size: document.fileSize,
+    document_type: document.documentType,
+    uploaded_at: document.uploadedAt,
   };
 }
 
@@ -66,7 +66,15 @@ export async function listByToken(token) {
     order: [['uploaded_at', 'DESC']],
   });
 
-  return documents.map((d) => d.toJSON());
+  return documents.map((d) => ({
+    id: d.id,
+    document_type: d.documentType,
+    name: d.name,
+    mime_type: d.mimeType,
+    file_url: d.fileUrl,
+    file_size: d.fileSize,
+    uploaded_at: d.uploadedAt,
+  }));
 }
 
 export async function deleteDocument(token, documentId) {

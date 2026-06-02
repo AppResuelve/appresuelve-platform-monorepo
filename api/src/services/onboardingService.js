@@ -19,10 +19,10 @@ export async function getByToken(token) {
 
   return {
     id: client.id,
-    businessName: client.businessName,
+    business_name: client.businessName,
     email: client.email,
     status: client.status,
-    formData: client.form ? client.form.data : null,
+    form_data: client.form ? client.form.data : null,
   };
 }
 

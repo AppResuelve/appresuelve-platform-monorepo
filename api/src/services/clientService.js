@@ -44,12 +44,12 @@ export async function createInvite({ businessName, email }) {
 
   return {
     id: client.id,
-    businessName: client.businessName,
+    business_name: client.businessName,
     email: client.email,
-    inviteToken: client.inviteToken,
+    invite_token: client.inviteToken,
     status: client.status,
-    createdAt: client.createdAt,
-    inviteLink,
+    created_at: client.createdAt,
+    invite_link: inviteLink,
   };
 }
 
@@ -77,19 +77,19 @@ export async function findAllWithCompletion() {
 
     return {
       id: client.id,
-      businessName: client.businessName,
+      business_name: client.businessName,
       email: client.email,
-      inviteToken: client.inviteToken,
+      invite_token: client.inviteToken,
       status: client.status,
-      createdAt: client.createdAt,
-      formData,
+      created_at: client.createdAt,
+      form_data: formData,
       documents: docs.map((d) => ({
         id: d.id,
         name: d.name,
-        mimeType: d.mimeType,
-        fileUrl: d.fileUrl,
-        fileSize: d.fileSize,
-        documentType: d.documentType,
+        mime_type: d.mimeType,
+        file_url: d.fileUrl,
+        file_size: d.fileSize,
+        document_type: d.documentType,
       })),
       completion,
     };
@@ -117,17 +117,17 @@ export async function findByToken(token) {
 
   return {
     id: client.id,
-    businessName: client.businessName,
+    business_name: client.businessName,
     email: client.email,
     status: client.status,
-    createdAt: client.createdAt,
-    formData: client.form ? client.form.data : null,
+    created_at: client.createdAt,
+    form_data: client.form ? client.form.data : null,
     documents: client.documents.map((d) => ({
       id: d.id,
       name: d.name,
-      mimeType: d.mimeType,
-      fileUrl: d.fileUrl,
-      documentType: d.documentType,
+      mime_type: d.mimeType,
+      file_url: d.fileUrl,
+      document_type: d.documentType,
     })),
   };
 }
