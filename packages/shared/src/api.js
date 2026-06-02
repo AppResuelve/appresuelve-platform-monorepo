@@ -27,3 +27,27 @@ export function saveOnboardingData(token, data) {
     body: JSON.stringify({ data })
   });
 }
+
+export async function uploadDocument(token, file, documentType) {
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('documentType', documentType);
+
+  const url = `${API_BASE}/documents/${token}`;
+  const res = await fetch(url, { method: 'POST', body: formData });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: 'Upload failed' }));
+    throw new Error(err.error || 'Upload failed');
+  }
+
+  return res.json();
+}
+
+export function getDocuments(token) {
+  return apiFetch(`/documents/${token}`);
+}
+
+export function deleteDocument(token, documentId) {
+  return apiFetch(`/documents/${token}/${documentId}`, { method: 'DELETE' });
+}
