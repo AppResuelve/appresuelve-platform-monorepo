@@ -1,37 +1,50 @@
 import express from 'express';
 import cors from 'cors';
-import clientsRouter from './routes/clients.js';
-import onboardingRouter from './routes/onboarding.js';
-import documentsRouter from './routes/documents.js';
-import adminRouter from './routes/admin.js';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import sequelize from './config/database.js';
+import routes from './routes/index.js';
 
 const app = express();
-const PORT = process.env.PORT || 3001;
 
 const allowedOrigins = process.env.CORS_ORIGINS
   ? process.env.CORS_ORIGINS.split(',')
   : ['http://localhost:5173', 'http://localhost:5174'];
 
-app.use(cors({
-  origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  }
-}));
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
+  })
+);
 app.use(express.json());
 
-app.use('/api/clients', clientsRouter);
-app.use('/api/onboarding', onboardingRouter);
-app.use('/api/documents', documentsRouter);
-app.use('/api/admin', adminRouter);
+app.use('/api', routes);
 
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
-});
+const PORT = process.env.PORT || 3001;
 
-app.listen(PORT, () => {
-  console.log(`🚀 Onboarding API running on http://localhost:${PORT}`);
-});
+async function start() {
+  try {
+    await sequelize.authenticate();
+    console.log('Database connected');
+  } catch (error) {
+    console.error('Failed to connect to database:', error.message);
+  }
+
+  app.listen(PORT, () => {
+    console.log(`Onboarding API running on http://localhost:${PORT}`);
+  });
+}
+
+const scriptPath = process.argv[1] && path.resolve(process.argv[1]);
+const isMainModule = scriptPath === fileURLToPath(import.meta.url);
+if (isMainModule) {
+  start();
+}
+
+export default app;
