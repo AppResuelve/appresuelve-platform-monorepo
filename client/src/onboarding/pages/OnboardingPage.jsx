@@ -332,7 +332,7 @@ function OnboardingPage() {
 
   const renderContent = () => (
     <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4 md:p-6">
-      <h2 className="text-base font-semibold text-slate-800 mb-4 md:hidden">
+      <h2 className="text-base font-semibold text-slate-800 mb-4">
         {STEPS[step].label}
       </h2>
       {step === STEPS.length - 1 ? (
@@ -433,11 +433,11 @@ function OnboardingPage() {
 
         {/* ========== Content + Footer column ========== */}
         <div className="flex-1 flex flex-col min-h-[calc(100vh-104px)] md:min-h-screen">
-          <main className="flex-1 max-w-2xl mx-auto w-full px-4 md:px-6 pt-4 md:pt-6 pb-28 md:pb-6">
+          <main className="flex-1 max-w-2xl mx-auto w-full px-4 md:px-6 pt-4 md:pt-12 pb-28">
             {renderContent()}
           </main>
 
-          <footer className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 z-30 md:static md:left-auto md:right-auto">
+          <footer className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 z-30 md:left-56">
             <div className="md:max-w-2xl md:mx-auto">
               <StepFooter
                 step={step}
