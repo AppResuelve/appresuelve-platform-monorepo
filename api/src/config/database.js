@@ -7,7 +7,7 @@ const sequelize = new Sequelize(process.env.DATABASE_URL, {
       ? { require: true, rejectUnauthorized: false }
       : false,
   },
-  logging: process.env.NODE_ENV === 'development' ? console.log : false,
+  logging: process.env.DB_LOGGING === 'true' ? console.log : false,
   define: {
     underscored: true,
     timestamps: true,

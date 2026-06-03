@@ -72,14 +72,14 @@ function SidebarStep({ index, label, isCurrent, isComplete, isPast, onClick }) {
     >
       <div
         className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium shrink-0 ${
-          isComplete || isPast
+          isComplete
             ? 'bg-green-500 text-white'
             : isCurrent
             ? 'bg-blue-600 text-white'
             : 'bg-slate-200 text-slate-400'
         }`}
       >
-        {isComplete || isPast ? <Check size={14} /> : index + 1}
+        {isComplete ? <Check size={14} /> : index + 1}
       </div>
       <span
         className={`text-sm ${

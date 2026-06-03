@@ -65,7 +65,6 @@ export default (sequelize, DataTypes) => {
       sequelize,
       modelName: 'ClientDocument',
       tableName: 'client_documents',
-      underscored: true,
       timestamps: true,
       createdAt: 'uploaded_at',
       updatedAt: false,

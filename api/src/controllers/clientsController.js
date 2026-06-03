@@ -2,8 +2,8 @@ import * as clientService from '../services/clientService.js';
 
 export async function create(req, res) {
   try {
-    const { businessName, email } = req.body;
-    const client = await clientService.createInvite({ businessName, email });
+    const { businessName, email, address } = req.body;
+    const client = await clientService.createInvite({ businessName, email, address });
     res.status(201).json(client);
   } catch (error) {
     console.error('Error creating invitation:', error);
@@ -50,5 +50,21 @@ export async function remove(req, res) {
   } catch (error) {
     console.error('Error deleting client:', error);
     res.status(500).json({ error: 'Failed to delete client' });
+  }
+}
+
+export async function update(req, res) {
+  try {
+    const { id } = req.params;
+    const result = await clientService.updateClient(id, req.body);
+
+    if (!result) {
+      return res.status(404).json({ error: 'Client not found' });
+    }
+
+    res.json(result);
+  } catch (error) {
+    console.error('Error updating client:', error);
+    res.status(500).json({ error: 'Failed to update client' });
   }
 }

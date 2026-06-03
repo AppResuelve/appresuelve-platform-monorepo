@@ -5,7 +5,8 @@ const OnboardingApp = lazy(() => import('./onboarding/OnboardingApp'));
 
 function App() {
   const hostname = window.location.hostname;
-  const isAdmin = hostname.startsWith('admin.');
+  const params = new URLSearchParams(window.location.search);
+  const isAdmin = hostname.startsWith('admin.') || params.get('app') === 'admin';
 
   return (
     <Suspense fallback={

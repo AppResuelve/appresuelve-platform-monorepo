@@ -28,6 +28,9 @@ export default (sequelize, DataTypes) => {
       email: {
         type: DataTypes.STRING(255),
       },
+      address: {
+        type: DataTypes.STRING(255),
+      },
       inviteToken: {
         type: DataTypes.STRING(64),
         unique: true,
@@ -47,9 +50,7 @@ export default (sequelize, DataTypes) => {
       sequelize,
       modelName: 'Client',
       tableName: 'clients',
-      underscored: true,
       timestamps: true,
-      createdAt: 'created_at',
       updatedAt: false,
     }
   );

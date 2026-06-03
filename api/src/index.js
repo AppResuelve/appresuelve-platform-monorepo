@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import path from 'path';
@@ -16,7 +17,11 @@ const isProduction = process.env.NODE_ENV === 'production';
 
 const allowedOrigins = isProduction
   ? PRODUCTION_ORIGINS
-  : (process.env.CORS_ORIGINS?.split(',') || ['http://localhost:5173', 'http://localhost:5174']);
+  : (process.env.CORS_ORIGINS?.split(',') || [
+    'http://localhost:5173',
+    'http://admin.localhost:5173',
+    'http://onboarding.localhost:5173',
+  ]);
 
 app.use(
   cors({

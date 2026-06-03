@@ -27,12 +27,13 @@ function calculateCompletion(formData, documents) {
   return Math.round((filledSections / sections.length) * total);
 }
 
-export async function createInvite({ businessName, email }) {
+export async function createInvite({ businessName, email, address }) {
   const inviteToken = generateToken();
 
   const client = await Client.create({
     businessName: businessName || null,
     email: email || null,
+    address: address || null,
     inviteToken,
     status: 'pending',
     inviteSentAt: new Date(),
@@ -46,6 +47,7 @@ export async function createInvite({ businessName, email }) {
     id: client.id,
     business_name: client.businessName,
     email: client.email,
+    address: client.address,
     invite_token: client.inviteToken,
     status: client.status,
     created_at: client.createdAt ? new Date(client.createdAt).toISOString() : null,
@@ -79,6 +81,7 @@ export async function findAllWithCompletion() {
       id: client.id,
       business_name: client.businessName,
       email: client.email,
+      address: client.address,
       invite_token: client.inviteToken,
       status: client.status,
       created_at: client.createdAt ? new Date(client.createdAt).toISOString() : null,
@@ -119,6 +122,7 @@ export async function findByToken(token) {
     id: client.id,
     business_name: client.businessName,
     email: client.email,
+    address: client.address,
     status: client.status,
     created_at: client.createdAt ? new Date(client.createdAt).toISOString() : null,
     form_data: client.form ? client.form.data : null,
@@ -166,4 +170,54 @@ export async function deleteClient(clientId) {
   }
 
   return true;
+}
+
+export async function updateClient(clientId, data) {
+  const client = await Client.findByPk(clientId, {
+    include: [
+      {
+        model: ClientForm,
+        as: 'form',
+        required: false,
+      },
+      {
+        model: ClientDocument,
+        as: 'documents',
+        required: false,
+      },
+    ],
+  });
+
+  if (!client) return null;
+
+  const fields = {};
+  if (data.businessName !== undefined) fields.businessName = data.businessName || null;
+  if (data.email !== undefined) fields.email = data.email || null;
+  if (data.address !== undefined) fields.address = data.address || null;
+
+  await client.update(fields);
+
+  const formData = client.form ? client.form.data : {};
+  const docs = client.documents || [];
+  const completion = calculateCompletion(formData, docs);
+
+  return {
+    id: client.id,
+    business_name: client.businessName,
+    email: client.email,
+    address: client.address,
+    invite_token: client.inviteToken,
+    status: client.status,
+    created_at: client.createdAt ? new Date(client.createdAt).toISOString() : null,
+    form_data: formData,
+    documents: docs.map((d) => ({
+      id: d.id,
+      name: d.name,
+      mime_type: d.mimeType,
+      file_url: d.fileUrl,
+      file_size: d.fileSize,
+      document_type: d.documentType,
+    })),
+    completion,
+  };
 }

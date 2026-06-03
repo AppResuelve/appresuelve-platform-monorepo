@@ -40,7 +40,6 @@ export default (sequelize, DataTypes) => {
       sequelize,
       modelName: 'ClientForm',
       tableName: 'client_forms',
-      underscored: true,
       timestamps: true,
       createdAt: false,
       updatedAt: 'updated_at',
