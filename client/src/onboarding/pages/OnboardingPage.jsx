@@ -11,7 +11,7 @@ import {
   X,
   Pencil,
 } from 'lucide-react';
-import { getClientByToken, saveOnboardingData } from '@appresuelve/shared';
+import { getClientByToken, saveOnboardingData } from '../../shared/api.js';
 import StepIndicator from '../components/StepIndicator';
 import HeroStep from '../components/HeroStep';
 import ServicesStep from '../components/ServicesStep';

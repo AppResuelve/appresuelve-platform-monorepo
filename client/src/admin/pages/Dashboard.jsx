@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Copy, ExternalLink, Users, Clock, AlertCircle, Pencil, X } from 'lucide-react';
-import { apiFetch, SERVICE_TYPES } from '@appresuelve/shared';
+import { apiFetch } from '../../shared/api.js';
+import { SERVICE_TYPES } from '../../shared/constants.js';
 
 const ONBOARDING_URL = import.meta.env.VITE_ONBOARDING_URL || 'http://localhost:5173';
 

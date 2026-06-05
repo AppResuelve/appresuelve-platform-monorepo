@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { SERVICE_TYPES } from '../constants.js';
+import { SERVICE_TYPES } from './constants.js';
 
 const serviceTypeValues = Object.values(SERVICE_TYPES);
 

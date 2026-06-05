@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { DOCUMENT_TYPES } from '../constants.js';
+import { DOCUMENT_TYPES } from './constants.js';
 
 const validTypes = Object.values(DOCUMENT_TYPES);
 

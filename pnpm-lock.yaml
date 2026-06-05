@@ -10,9 +10,6 @@ importers:
 
   api:
     dependencies:
-      '@appresuelve/shared':
-        specifier: workspace:*
-        version: link:../packages/shared
       cloudinary:
         specifier: ^2.5.0
         version: 2.10.0
@@ -37,6 +34,9 @@ importers:
       uuid:
         specifier: ^9.0.0
         version: 9.0.1
+      zod:
+        specifier: ^4.4.3
+        version: 4.4.3
     devDependencies:
       sequelize-cli:
         specifier: ^6.6.5
@@ -44,9 +44,6 @@ importers:
 
   client:
     dependencies:
-      '@appresuelve/shared':
-        specifier: workspace:*
-        version: link:../packages/shared
       lucide-react:
         specifier: ^0.468.0
         version: 0.468.0(react@19.2.6)
@@ -78,12 +75,6 @@ importers:
       vite:
         specifier: ^6.0.0
         version: 6.4.3(@types/node@25.9.1)(jiti@2.7.0)(lightningcss@1.32.0)
-
-  packages/shared:
-    dependencies:
-      zod:
-        specifier: ^4.4.3
-        version: 4.4.3
 
 packages:
 

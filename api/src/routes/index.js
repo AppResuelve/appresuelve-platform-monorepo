@@ -5,7 +5,7 @@ import {
   UpdateClientSchema,
   SaveOnboardingSchema,
   UploadDocumentSchema,
-} from '@appresuelve/shared/schemas';
+} from '../validations/index.js';
 import { validate } from '../middleware/validate.js';
 import * as clientsController from '../controllers/clientsController.js';
 import * as onboardingController from '../controllers/onboardingController.js';

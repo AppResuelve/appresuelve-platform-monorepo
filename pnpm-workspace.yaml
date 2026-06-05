@@ -1,7 +1,6 @@
 packages:
   - 'client'
   - 'api'
-  - 'packages/*'
 
 allowBuilds:
   esbuild: true
