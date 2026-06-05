@@ -31,6 +31,10 @@ export default (sequelize, DataTypes) => {
       address: {
         type: DataTypes.STRING(255),
       },
+      serviceType: {
+        type: DataTypes.STRING(50),
+        field: 'service_type',
+      },
       inviteToken: {
         type: DataTypes.STRING(64),
         unique: true,

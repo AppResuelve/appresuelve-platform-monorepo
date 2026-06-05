@@ -1,8 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Copy, ExternalLink, Users, Clock, AlertCircle, Pencil, X } from 'lucide-react';
-import { apiFetch } from '@appresuelve/shared';
+import { apiFetch, SERVICE_TYPES } from '@appresuelve/shared';
 
 const ONBOARDING_URL = import.meta.env.VITE_ONBOARDING_URL || 'http://localhost:5173';
+
+const SERVICE_TYPE_LABELS = {
+  [SERVICE_TYPES.LANDING_PAGE]: 'Landing Page',
+  [SERVICE_TYPES.CART_WHATSAPP]: 'Sitio web con carrito a Whatsapp',
+  [SERVICE_TYPES.CORPORATE]: 'Sitio web corporativo',
+};
 
 function Modal({ children, onClose }) {
   return (
@@ -79,12 +85,12 @@ function Dashboard() {
   const [copied, setCopied] = useState(null);
 
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [formData, setFormData] = useState({ businessName: '', email: '', address: '' });
+  const [formData, setFormData] = useState({ businessName: '', email: '', address: '', serviceType: '' });
   const [creating, setCreating] = useState(false);
   const [lastCreated, setLastCreated] = useState(null);
 
   const [editingClient, setEditingClient] = useState(null);
-  const [editData, setEditData] = useState({ businessName: '', email: '', address: '' });
+  const [editData, setEditData] = useState({ businessName: '', email: '', address: '', serviceType: '' });
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -105,7 +111,7 @@ function Dashboard() {
   }
 
   function openCreateModal() {
-    setFormData({ businessName: '', email: '', address: '' });
+    setFormData({ businessName: '', email: '', address: '', serviceType: '' });
     setLastCreated(null);
     setError(null);
     setShowCreateModal(true);
@@ -113,7 +119,7 @@ function Dashboard() {
 
   function closeCreateModal() {
     setShowCreateModal(false);
-    setFormData({ businessName: '', email: '', address: '' });
+    setFormData({ businessName: '', email: '', address: '', serviceType: '' });
     setLastCreated(null);
     setCreating(false);
   }
@@ -123,6 +129,7 @@ function Dashboard() {
       businessName: client.business_name || '',
       email: client.email || '',
       address: client.address || '',
+      serviceType: client.service_type || '',
     });
     setEditingClient(client);
     setError(null);
@@ -246,6 +253,7 @@ function Dashboard() {
               <tr>
                 <th className="text-left px-6 py-4 text-sm font-semibold text-slate-600">Cliente</th>
                 <th className="text-left px-6 py-4 text-sm font-semibold text-slate-600">Estado</th>
+                <th className="text-left px-6 py-4 text-sm font-semibold text-slate-600">Servicio</th>
                 <th className="text-left px-6 py-4 text-sm font-semibold text-slate-600">Progreso</th>
                 <th className="text-left px-6 py-4 text-sm font-semibold text-slate-600">Link</th>
                 <th className="text-left px-6 py-4 text-sm font-semibold text-slate-600">Creado</th>
@@ -260,6 +268,7 @@ function Dashboard() {
                     <div className="text-sm text-slate-500">{client.email || 'Sin email'}</div>
                   </td>
                   <td className="px-6 py-4">{getStatusBadge(client.status)}</td>
+                  <td className="px-6 py-4 text-sm text-slate-600">{SERVICE_TYPE_LABELS[client.service_type] || '—'}</td>
                   <td className="px-6 py-4">{getCompletionBar(client.completion || 0)}</td>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-1 min-w-[200px]">
@@ -351,7 +360,23 @@ function Dashboard() {
               onSubmit={handleCreate}
               submitLabel="Crear Link"
               submitting={creating}
-              extraFields={null}
+              extraFields={
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">
+                    Tipo de servicio
+                  </label>
+                  <select
+                    value={formData.serviceType}
+                    onChange={(e) => setFormData({ ...formData, serviceType: e.target.value })}
+                    className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">Seleccionar...</option>
+                    {Object.entries(SERVICE_TYPE_LABELS).map(([value, label]) => (
+                      <option key={value} value={value}>{label}</option>
+                    ))}
+                  </select>
+                </div>
+              }
             />
           )}
         </Modal>
@@ -366,7 +391,23 @@ function Dashboard() {
             onSubmit={handleUpdate}
             submitLabel="Guardar Cambios"
             submitting={saving}
-            extraFields={null}
+            extraFields={
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">
+                  Tipo de servicio
+                </label>
+                <select
+                  value={editData.serviceType}
+                  onChange={(e) => setEditData({ ...editData, serviceType: e.target.value })}
+                  className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">Seleccionar...</option>
+                  {Object.entries(SERVICE_TYPE_LABELS).map(([value, label]) => (
+                    <option key={value} value={value}>{label}</option>
+                  ))}
+                </select>
+              </div>
+            }
           />
         </Modal>
       )}

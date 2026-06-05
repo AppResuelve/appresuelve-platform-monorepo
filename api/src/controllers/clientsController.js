@@ -2,8 +2,8 @@ import * as clientService from '../services/clientService.js';
 
 export async function create(req, res) {
   try {
-    const { businessName, email, address } = req.body;
-    const client = await clientService.createInvite({ businessName, email, address });
+    const { businessName, email, address, serviceType } = req.body;
+    const client = await clientService.createInvite({ businessName, email, address, serviceType });
     res.status(201).json(client);
   } catch (error) {
     console.error('Error creating invitation:', error);

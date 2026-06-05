@@ -16,3 +16,9 @@ export const DOCUMENT_TYPES = {
   PRODUCT_FILES: 'product_files',
   PRODUCT_IMAGES: 'product_images',
 };
+
+export const SERVICE_TYPES = {
+  LANDING_PAGE: 'landing_page',
+  CART_WHATSAPP: 'cart_whatsapp',
+  CORPORATE: 'corporate',
+};

@@ -27,13 +27,14 @@ function calculateCompletion(formData, documents) {
   return Math.round((filledSections / sections.length) * total);
 }
 
-export async function createInvite({ businessName, email, address }) {
+export async function createInvite({ businessName, email, address, serviceType }) {
   const inviteToken = generateToken();
 
   const client = await Client.create({
     businessName: businessName || null,
     email: email || null,
     address: address || null,
+    serviceType: serviceType || null,
     inviteToken,
     status: 'pending',
     inviteSentAt: new Date(),
@@ -48,6 +49,7 @@ export async function createInvite({ businessName, email, address }) {
     business_name: client.businessName,
     email: client.email,
     address: client.address,
+    service_type: client.serviceType,
     invite_token: client.inviteToken,
     status: client.status,
     created_at: client.createdAt ? new Date(client.createdAt).toISOString() : null,
@@ -82,6 +84,7 @@ export async function findAllWithCompletion() {
       business_name: client.businessName,
       email: client.email,
       address: client.address,
+      service_type: client.serviceType,
       invite_token: client.inviteToken,
       status: client.status,
       created_at: client.createdAt ? new Date(client.createdAt).toISOString() : null,
@@ -123,6 +126,7 @@ export async function findByToken(token) {
     business_name: client.businessName,
     email: client.email,
     address: client.address,
+    service_type: client.serviceType,
     status: client.status,
     created_at: client.createdAt ? new Date(client.createdAt).toISOString() : null,
     form_data: client.form ? client.form.data : null,
@@ -194,6 +198,7 @@ export async function updateClient(clientId, data) {
   if (data.businessName !== undefined) fields.businessName = data.businessName || null;
   if (data.email !== undefined) fields.email = data.email || null;
   if (data.address !== undefined) fields.address = data.address || null;
+  if (data.serviceType !== undefined) fields.serviceType = data.serviceType || null;
 
   await client.update(fields);
 
@@ -206,6 +211,7 @@ export async function updateClient(clientId, data) {
     business_name: client.businessName,
     email: client.email,
     address: client.address,
+    service_type: client.serviceType,
     invite_token: client.inviteToken,
     status: client.status,
     created_at: client.createdAt ? new Date(client.createdAt).toISOString() : null,

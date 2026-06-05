@@ -9,6 +9,7 @@ import {
   AlertCircle,
   Menu,
   X,
+  Pencil,
 } from 'lucide-react';
 import { getClientByToken, saveOnboardingData } from '@appresuelve/shared';
 import StepIndicator from '../components/StepIndicator';
@@ -55,6 +56,40 @@ function isStepComplete(key, data) {
       return !!(data.businessName && data.description);
     default:
       return false;
+  }
+}
+
+function getStepPercentage(key, data, documents) {
+  if (!data) return 0;
+  switch (key) {
+    case 'hero': {
+      const heroFields = [data.headline, data.subheadline, data.ctaText, data.backgroundImage];
+      const heroWeight = [30, 25, 25, 20];
+      return heroFields.reduce((sum, f, i) => sum + (f ? heroWeight[i] : 0), 0);
+    }
+    case 'services':
+      return data.length > 0 && data.some((s) => s.name) ? 100 : 0;
+    case 'products': {
+      if (!documents) return 0;
+      const hasProducts = documents.some(
+        (d) => d.document_type === 'product_files' || d.document_type === 'product_images'
+      );
+      return hasProducts ? 100 : 0;
+    }
+    case 'faq':
+      return data.length > 0 && data.some((f) => f.question) ? 100 : 0;
+    case 'socialLinks': {
+      const socialKeys = ['instagram', 'facebook', 'whatsapp', 'tiktok', 'youtube'];
+      const filled = socialKeys.filter((k) => data[k]).length;
+      return filled > 0 ? Math.round((filled / socialKeys.length) * 100) : 0;
+    }
+    case 'branding': {
+      const brandFields = [data.businessName, data.description, data.primary, data.secondary];
+      const brandWeight = [35, 35, 15, 15];
+      return brandFields.reduce((sum, f, i) => sum + (f ? brandWeight[i] : 0), 0);
+    }
+    default:
+      return 0;
   }
 }
 
@@ -255,6 +290,12 @@ function OnboardingPage() {
     setShowIntro(false);
   }
 
+  function editStep(i) {
+    setFinished(false);
+    setStep(i);
+    localStorage.setItem('ons_step_' + hash, i);
+  }
+
   const completedArray = getCompletedArray(formData);
 
   if (loading) {
@@ -285,16 +326,67 @@ function OnboardingPage() {
   if (finished) {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-        <div className="text-center max-w-md">
-          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <CheckCircle className="text-green-500" size={32} />
+        <div className="w-full max-w-lg">
+          <div className="text-center mb-8">
+            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <CheckCircle className="text-green-500" size={32} />
+            </div>
+            <h1 className="text-xl font-bold text-slate-800 mb-2">¡Listo!</h1>
+            <p className="text-slate-500">Ya recibimos toda la información.</p>
+            {client?.business_name && (
+              <p className="text-slate-400 text-sm mt-1">
+                Gracias {client.business_name}.
+              </p>
+            )}
           </div>
-          <h1 className="text-xl font-bold text-slate-800 mb-2">¡Listo!</h1>
-          <p className="text-slate-500 mb-1">Ya recibimos toda la información.</p>
-          <p className="text-slate-400 text-sm">
-            {client?.business_name
-              ? `Gracias ${client.business_name}, en breve nos pondremos en contacto.`
-              : 'En breve nos pondremos en contacto con vos.'}
+
+          <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-6">
+            <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4">
+              Resumen
+            </h3>
+            <div className="space-y-3">
+              {STEPS.map((s, i) => {
+                const percentage = getStepPercentage(
+                  s.key,
+                  formData[s.key],
+                  client?.documents
+                );
+                const barColor =
+                  percentage >= 100
+                    ? 'bg-green-500'
+                    : percentage >= 40
+                    ? 'bg-blue-500'
+                    : 'bg-yellow-500';
+
+                return (
+                  <div key={s.key} className="flex items-center gap-3">
+                    <span className="text-sm font-medium text-slate-700 w-28 shrink-0">
+                      {s.label}
+                    </span>
+                    <div className="flex-1 h-2 bg-slate-200 rounded-full overflow-hidden">
+                      <div
+                        className={`h-full ${barColor} transition-all`}
+                        style={{ width: `${percentage}%` }}
+                      />
+                    </div>
+                    <span className="text-xs text-slate-400 w-8 text-right">
+                      {percentage}%
+                    </span>
+                    <button
+                      onClick={() => editStep(i)}
+                      className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors shrink-0"
+                      title={`Editar ${s.label}`}
+                    >
+                      <Pencil size={16} />
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          <p className="text-center text-sm text-slate-400">
+            Esta información está siendo revisada por AppResuelve
           </p>
         </div>
       </div>
