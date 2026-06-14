@@ -1,14 +1,26 @@
 const API_BASE = import.meta.env.VITE_API_URL || '/api';
 
+function getToken() {
+  return localStorage.getItem('platform_token')
+}
+
 export async function apiFetch(path, options = {}) {
   const url = path.startsWith('http') ? path : `${API_BASE}${path}`;
+  const token = getToken()
   const res = await fetch(url, {
-    headers: { 'Content-Type': 'application/json', ...options.headers },
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...options.headers,
+    },
     ...options
   });
   if (!res.ok) {
     const error = await res.json().catch(() => ({ error: 'Request failed' }));
-    throw new Error(error.error || `HTTP ${res.status}`);
+    const msg = error.details?.length > 0
+      ? error.details.map((d) => `${d.field}: ${d.message}`).join('. ')
+      : error.error || `HTTP ${res.status}`
+    throw new Error(msg);
   }
   return res.json();
 }

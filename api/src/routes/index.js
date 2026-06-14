@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import multer from 'multer';
+import { authMiddleware, generateToken } from '../middleware/auth.js';
 import {
   CreateClientSchema,
   UpdateClientSchema,
@@ -18,12 +19,31 @@ const uploadMiddleware = multer({
   limits: { fileSize: 50 * 1024 * 1024 },
 });
 
-// Clients
-router.post('/clients', validate(CreateClientSchema), clientsController.create);
-router.get('/clients', clientsController.list);
-router.get('/clients/by-token/:token', clientsController.getByToken);
-router.put('/clients/:id', validate(UpdateClientSchema), clientsController.update);
-router.delete('/clients/:id', clientsController.remove);
+// Auth
+router.post('/auth/login', (req, res) => {
+  const { email, password } = req.body
+  const adminEmail = process.env.PLATFORM_ADMIN_EMAIL
+  const adminPass = process.env.PLATFORM_ADMIN_PASSWORD
+
+  if (!adminEmail || !adminPass) {
+    return res.status(500).json({ error: 'Credenciales de admin no configuradas' })
+  }
+  if (email !== adminEmail || password !== adminPass) {
+    return res.status(401).json({ error: 'Credenciales inválidas' })
+  }
+
+  const token = generateToken(email)
+  res.json({ token })
+})
+
+// Clients (protegido)
+router.post('/clients', authMiddleware, validate(CreateClientSchema), clientsController.create);
+router.get('/clients', authMiddleware, clientsController.list);
+router.get('/clients/by-token/:token', clientsController.getByToken); // público (onboarding)
+router.put('/clients/:id', authMiddleware, validate(UpdateClientSchema), clientsController.update);
+router.delete('/clients/:id', authMiddleware, clientsController.remove);
+router.post('/clients/:id/create-admin', authMiddleware, clientsController.createAdmin);
+router.post('/clients/:id/sync', authMiddleware, clientsController.sync);
 
 // Onboarding
 router.get('/onboarding/:token', onboardingController.getByToken);

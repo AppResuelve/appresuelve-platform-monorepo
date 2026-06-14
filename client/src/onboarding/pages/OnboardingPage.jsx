@@ -13,28 +13,22 @@ import {
 } from 'lucide-react';
 import { getClientByToken, saveOnboardingData } from '../../shared/api.js';
 import StepIndicator from '../components/StepIndicator';
-import HeroStep from '../components/HeroStep';
 import ServicesStep from '../components/ServicesStep';
 import ProductsStep from '../components/ProductsStep';
-import FaqStep from '../components/FaqStep';
 import SocialLinksStep from '../components/SocialLinksStep';
 import BrandingStep from '../components/BrandingStep';
 import SaveIndicator from '../../shared/components/SaveIndicator';
 
 const STEPS = [
-  { key: 'hero', label: 'Hero', component: HeroStep },
   { key: 'services', label: 'Servicios', component: ServicesStep },
   { key: 'products', label: 'Productos', component: ProductsStep },
-  { key: 'faq', label: 'FAQ', component: FaqStep },
   { key: 'socialLinks', label: 'Redes Sociales', component: SocialLinksStep },
   { key: 'branding', label: 'Branding', component: BrandingStep },
 ];
 
 const INITIAL_DATA = {
-  hero: {},
   services: [],
   products: {},
-  faq: [],
   socialLinks: {},
   branding: {},
 };
@@ -42,14 +36,10 @@ const INITIAL_DATA = {
 function isStepComplete(key, data) {
   if (!data) return false;
   switch (key) {
-    case 'hero':
-      return !!(data.headline && data.subheadline && data.ctaText);
     case 'services':
       return data.length > 0 && data.every((s) => s.name);
     case 'products':
       return false;
-    case 'faq':
-      return data.length > 0 && data.every((f) => f.question);
     case 'socialLinks':
       return Object.values(data || {}).some((v) => v);
     case 'branding':
@@ -62,11 +52,6 @@ function isStepComplete(key, data) {
 function getStepPercentage(key, data, documents) {
   if (!data) return 0;
   switch (key) {
-    case 'hero': {
-      const heroFields = [data.headline, data.subheadline, data.ctaText, data.backgroundImage];
-      const heroWeight = [30, 25, 25, 20];
-      return heroFields.reduce((sum, f, i) => sum + (f ? heroWeight[i] : 0), 0);
-    }
     case 'services':
       return data.length > 0 && data.some((s) => s.name) ? 100 : 0;
     case 'products': {
@@ -76,8 +61,6 @@ function getStepPercentage(key, data, documents) {
       );
       return hasProducts ? 100 : 0;
     }
-    case 'faq':
-      return data.length > 0 && data.some((f) => f.question) ? 100 : 0;
     case 'socialLinks': {
       const socialKeys = ['instagram', 'facebook', 'whatsapp', 'tiktok', 'youtube'];
       const filled = socialKeys.filter((k) => data[k]).length;

@@ -1,10 +1,6 @@
 import cloudinary from '../../config/cloudinary.js';
 
-const BASE_FOLDER = 'appresuelve-platform/clients';
-
-export async function upload(fileBuffer, clientId, documentType, filename) {
-  const folder = `${BASE_FOLDER}/${clientId}/${documentType}`;
-
+export async function upload(fileBuffer, folder) {
   const result = await new Promise((resolve, reject) => {
     const stream = cloudinary.uploader.upload_stream(
       {
@@ -34,9 +30,7 @@ export async function deleteFile(publicId, resourceType = 'image') {
   return cloudinary.uploader.destroy(publicId, { resource_type: resourceType });
 }
 
-export async function deleteClientFiles(clientId) {
-  const prefix = `${BASE_FOLDER}/${clientId}/`;
-
+export async function deleteClientFiles(prefix) {
   try {
     await Promise.all([
       cloudinary.api.delete_resources_by_prefix(prefix, { resource_type: 'image' }),
@@ -44,7 +38,7 @@ export async function deleteClientFiles(clientId) {
       cloudinary.api.delete_resources_by_prefix(prefix, { resource_type: 'video' }),
     ]);
   } catch (error) {
-    console.error(`Error deleting Cloudinary files for client ${clientId}:`, error);
+    console.error(`Error deleting Cloudinary files for prefix ${prefix}:`, error);
     throw error;
   }
 }

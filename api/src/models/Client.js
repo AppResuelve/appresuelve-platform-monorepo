@@ -49,6 +49,25 @@ export default (sequelize, DataTypes) => {
         type: DataTypes.DATE,
         field: 'invite_sent_at',
       },
+      apiUrl: {
+        type: DataTypes.STRING(512),
+        field: 'api_url',
+      },
+      adminStatus: {
+        type: DataTypes.STRING(50),
+        defaultValue: 'pending',
+        field: 'admin_status',
+      },
+      syncStatus: {
+        type: DataTypes.JSONB,
+        defaultValue: {},
+        field: 'sync_status',
+      },
+      cloudinaryFolderPrefix: {
+        type: DataTypes.STRING(64),
+        unique: true,
+        field: 'cloudinary_folder_prefix',
+      },
     },
     {
       sequelize,

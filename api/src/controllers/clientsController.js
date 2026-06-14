@@ -68,3 +68,30 @@ export async function update(req, res) {
     res.status(500).json({ error: 'Failed to update client' });
   }
 }
+
+export async function createAdmin(req, res) {
+  try {
+    const { id } = req.params
+    const client = await clientService.createAdminForClient(id)
+    res.json({
+      id: client.id,
+      admin_status: client.adminStatus,
+      api_url: client.apiUrl,
+    })
+  } catch (error) {
+    console.error('Error creating admin:', error)
+    res.status(500).json({ error: error.message || 'Failed to create admin' })
+  }
+}
+
+export async function sync(req, res) {
+  try {
+    const { id } = req.params
+    const { sections } = req.body
+    const result = await clientService.syncSections(id, sections || [])
+    res.json(result)
+  } catch (error) {
+    console.error('Error syncing:', error)
+    res.status(500).json({ error: error.message || 'Failed to sync' })
+  }
+}

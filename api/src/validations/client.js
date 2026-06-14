@@ -8,6 +8,7 @@ export const CreateClientSchema = z.object({
   email: z.string().email().optional().or(z.literal('')),
   address: z.string().optional(),
   serviceType: z.enum(serviceTypeValues).optional(),
+  apiUrl: z.string().optional().or(z.literal('')),
 });
 
 export const UpdateClientSchema = z.object({
@@ -15,4 +16,5 @@ export const UpdateClientSchema = z.object({
   email: z.string().email().optional().or(z.literal('')),
   address: z.string().optional(),
   serviceType: z.enum(serviceTypeValues).optional(),
+  apiUrl: z.string().optional().or(z.literal('')),
 });

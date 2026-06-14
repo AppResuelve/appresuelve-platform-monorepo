@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
+import morgan from 'morgan';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import sequelize from './config/database.js';
@@ -34,6 +35,7 @@ app.use(
     },
   })
 );
+app.use(morgan('dev'));
 app.use(express.json());
 
 app.use('/api', routes);

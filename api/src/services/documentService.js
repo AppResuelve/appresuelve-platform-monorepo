@@ -10,26 +10,28 @@ export async function uploadDocument(token, file, documentType) {
 
   if (!client) return null;
 
-  const storageResult = await upload(
-    file.buffer,
-    client.id,
-    documentType || 'general',
-    file.originalname
-  );
+  const type = documentType || 'general'
+  const folderMap = {
+    logo: 'branding',
+    favicon: 'branding',
+    product_files: 'productos',
+    product_images: 'productos',
+    hero: 'branding',
+  }
+  const subfolder = folderMap[type] || 'general'
+  const prefix = client.cloudinaryFolderPrefix || `clients/${client.id}`
+  const folder = `${prefix}/${subfolder}`
 
-  const storageProvider =
-    process.env.NODE_ENV === 'production' || process.env.STORAGE_PROVIDER === 'cloudinary'
-      ? 'cloudinary'
-      : 'local';
+  const storageResult = await upload(file.buffer, folder)
 
   const document = await ClientDocument.create({
     clientId: client.id,
-    documentType: documentType || 'general',
+    documentType: type,
     name: file.originalname,
     mimeType: file.mimetype,
     fileUrl: storageResult.url,
     fileSize: storageResult.bytes,
-    storageProvider,
+    storageProvider: 'cloudinary',
     publicId: storageResult.publicId,
     resourceType: storageResult.resourceType || 'auto',
   });
