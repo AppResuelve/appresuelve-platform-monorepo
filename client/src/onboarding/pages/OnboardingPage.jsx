@@ -33,17 +33,19 @@ const INITIAL_DATA = {
   branding: {},
 };
 
-function isStepComplete(key, data) {
+function isStepComplete(key, data, documents) {
   if (!data) return false;
   switch (key) {
     case 'services':
-      return data.length > 0 && data.every((s) => s.name);
+      return data.length > 0 && data.every((s) => s.name && s.description && s.price);
     case 'products':
-      return false;
+      if (!documents || documents.length === 0) return false;
+      return documents.some((d) => d.document_type === 'product_files') &&
+             documents.some((d) => d.document_type === 'product_images');
     case 'socialLinks':
-      return Object.values(data || {}).some((v) => v);
+      return Object.values(data || {}).filter(Boolean).length >= 3;
     case 'branding':
-      return !!(data.businessName && data.description);
+      return !!(data.businessName && data.description && data.primary && data.secondary);
     default:
       return false;
   }
@@ -52,14 +54,25 @@ function isStepComplete(key, data) {
 function getStepPercentage(key, data, documents) {
   if (!data) return 0;
   switch (key) {
-    case 'services':
-      return data.length > 0 && data.some((s) => s.name) ? 100 : 0;
+    case 'services': {
+      if (data.length === 0) return 0
+      const fieldsPerService = 3 // name, description, price
+      const totalFields = data.length * fieldsPerService
+      let filled = 0
+      data.forEach((s) => {
+        if (s.name) filled++
+        if (s.description) filled++
+        if (s.price) filled++
+      })
+      return Math.round((filled / totalFields) * 100)
+    }
     case 'products': {
-      if (!documents) return 0;
-      const hasProducts = documents.some(
-        (d) => d.document_type === 'product_files' || d.document_type === 'product_images'
-      );
-      return hasProducts ? 100 : 0;
+      if (!documents || documents.length === 0) return 0
+      const hasFiles = documents.some((d) => d.document_type === 'product_files')
+      const hasImages = documents.some((d) => d.document_type === 'product_images')
+      if (hasFiles && hasImages) return 100
+      if (hasFiles || hasImages) return 50
+      return 0
     }
     case 'socialLinks': {
       const socialKeys = ['instagram', 'facebook', 'whatsapp', 'tiktok', 'youtube'];
@@ -76,8 +89,8 @@ function getStepPercentage(key, data, documents) {
   }
 }
 
-function getCompletedArray(formData) {
-  return STEPS.map((s) => isStepComplete(s.key, formData[s.key]));
+function getCompletedArray(formData, documents) {
+  return STEPS.map((s) => isStepComplete(s.key, formData[s.key], documents));
 }
 
 function SidebarStep({ index, label, isCurrent, isComplete, isPast, onClick }) {
@@ -279,7 +292,7 @@ function OnboardingPage() {
     localStorage.setItem('ons_step_' + hash, i);
   }
 
-  const completedArray = getCompletedArray(formData);
+  const completedArray = getCompletedArray(formData, client?.documents);
 
   if (loading) {
     return (
