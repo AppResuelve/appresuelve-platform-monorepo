@@ -337,6 +337,7 @@ export async function syncSections(clientId, sections) {
         secondaryColor: branding.secondary || branding.accent,
         logoUrl: logoDoc?.fileUrl || null,
         faviconUrl: faviconDoc?.fileUrl || null,
+        storeStatus: 'active',
         instagram: social.instagram,
         facebook: social.facebook,
         tiktok: social.tiktok,
