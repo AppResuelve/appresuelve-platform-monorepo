@@ -381,8 +381,18 @@ export async function syncSections(clientId, sections) {
   }
 
   if (sections.includes('services')) {
-    syncStatus.services = { at: new Date().toISOString(), status: 'ok' }
-    results.services = 'ok'
+    const services = formData.services || []
+    if (services.length > 0) {
+      try {
+        await call('seed-services', services)
+        results.services = 'ok'
+        syncStatus.services = { at: new Date().toISOString(), status: 'ok' }
+      } catch (err) {
+        results.services = err.message
+      }
+    } else {
+      results.services = 'no-data'
+    }
   }
 
   await client.update({ syncStatus })

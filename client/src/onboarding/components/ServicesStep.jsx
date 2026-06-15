@@ -1,7 +1,7 @@
 import React from 'react';
 import { Plus, Trash2, GripVertical } from 'lucide-react';
 
-const DEFAULT_SERVICE = { name: '', description: '', icon: 'star', price: '' };
+const DEFAULT_SERVICE = { name: '', description: '', price: '' };
 
 function ServicesStep({ data, onChange }) {
   const services = data || [];
@@ -49,14 +49,7 @@ function ServicesStep({ data, onChange }) {
               rows={2}
               className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm resize-none"
             />
-            <div className="flex gap-3">
-              <input
-                type="text"
-                value={service.icon}
-                onChange={(e) => update(index, 'icon', e.target.value)}
-                placeholder="Ícono (ej: star, zap, heart)"
-                className="flex-1 px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-              />
+            <div>
               <input
                 type="text"
                 value={service.price || ''}
