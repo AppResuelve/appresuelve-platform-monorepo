@@ -17,7 +17,7 @@ export default function Layout({ token, onLogout }) {
         <Menu className="w-5 h-5" />
       </button>
 
-      <main className="ml-0 lg:ml-56 p-6 pt-16 lg:pt-6 min-h-screen">
+      <main className="ml-0 lg:ml-56 p-2 lg:p-6 pt-16 lg:pt-6 min-h-screen">
         <Outlet />
       </main>
     </div>
