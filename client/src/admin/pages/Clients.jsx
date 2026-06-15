@@ -380,8 +380,8 @@ function Clients() {
   }
 
   return (
-    <div className="px-4 md:px-8 py-6 md:py-8 max-w-7xl mx-auto pb-28">
-      <div className="flex items-center justify-between mb-6">
+    <div className="px-2 md:px-8 py-6 md:py-8 max-w-7xl mx-auto pb-28">
+      <div className="flex items-center justify-between gap-4 mb-6">
         <div>
           <h1 className="text-2xl font-bold text-slate-800">Clientes</h1>
           <p className="text-slate-500 mt-1">Gestiona las invitaciones de tus clientes</p>
