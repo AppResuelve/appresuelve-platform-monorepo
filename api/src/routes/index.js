@@ -1,16 +1,22 @@
 import { Router } from 'express';
 import multer from 'multer';
 import { authMiddleware, generateToken } from '../middleware/auth.js';
+import { apiKeyAuth } from '../middleware/apiKeyAuth.js';
 import {
   CreateClientSchema,
   UpdateClientSchema,
   SaveOnboardingSchema,
   UploadDocumentSchema,
+  CreateCategorySchema,
+  UpdateCategorySchema,
+  CreateComponentSchema,
+  UpdateComponentSchema,
 } from '../validations/index.js';
 import { validate } from '../middleware/validate.js';
 import * as clientsController from '../controllers/clientsController.js';
 import * as onboardingController from '../controllers/onboardingController.js';
 import * as documentsController from '../controllers/documentsController.js';
+import * as moduleController from '../controllers/moduleController.js';
 
 const router = Router();
 
@@ -58,6 +64,23 @@ router.post(
 );
 router.get('/documents/:token', documentsController.list);
 router.delete('/documents/:token/:documentId', documentsController.remove);
+
+// Module Categories (admin)
+router.get('/admin/module-categories', authMiddleware, moduleController.listCategories);
+router.get('/admin/module-categories/:id', authMiddleware, moduleController.getCategory);
+router.post('/admin/module-categories', authMiddleware, validate(CreateCategorySchema), moduleController.createCategory);
+router.put('/admin/module-categories/:id', authMiddleware, validate(UpdateCategorySchema), moduleController.updateCategory);
+router.delete('/admin/module-categories/:id', authMiddleware, moduleController.deleteCategory);
+
+// Module Components (admin)
+router.get('/admin/module-components', authMiddleware, moduleController.listComponents);
+router.get('/admin/module-components/:id', authMiddleware, moduleController.getComponent);
+router.post('/admin/module-components', authMiddleware, validate(CreateComponentSchema), moduleController.createComponent);
+router.put('/admin/module-components/:id', authMiddleware, validate(UpdateComponentSchema), moduleController.updateComponent);
+router.delete('/admin/module-components/:id', authMiddleware, moduleController.deleteComponent);
+
+// Public Module API (API Key)
+router.get('/modules', apiKeyAuth, moduleController.getPublicModules);
 
 // Admin
 router.get('/admin/health', (req, res) => {

@@ -1,12 +1,28 @@
-import React from 'react';
-import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Users, LogOut, X } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { NavLink, useLocation } from 'react-router-dom';
+import { LayoutDashboard, Users, LogOut, X, Wrench, ChevronDown, ChevronRight, FileText, Puzzle } from 'lucide-react';
 
 export default function Sidebar({ open, onClose, onLogout }) {
+  const location = useLocation()
+  const [expanded, setExpanded] = useState(false)
+
+  useEffect(() => {
+    if (location.pathname.startsWith('/cambios')) {
+      setExpanded(true)
+    }
+  }, [location.pathname])
+
   const items = [
     { to: '/', icon: LayoutDashboard, label: 'Dashboard', end: true },
     { to: '/clientes', icon: Users, label: 'Clientes', end: false },
-  ];
+  ]
+
+  const subItems = [
+    { to: '/cambios/solicitudes', icon: FileText, label: 'Solicitudes' },
+    { to: '/cambios/constructor', icon: Puzzle, label: 'Constructor' },
+  ]
+
+  const isParentActive = location.pathname.startsWith('/cambios')
 
   const content = (
     <>
@@ -44,6 +60,45 @@ export default function Sidebar({ open, onClose, onLogout }) {
             {label}
           </NavLink>
         ))}
+
+        {/* Collapsible "Cambios de clientes" */}
+        <div>
+          <button
+            onClick={() => setExpanded(!expanded)}
+            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors w-full ${
+              isParentActive
+                ? 'text-indigo-700'
+                : 'text-slate-600 hover:text-slate-800 hover:bg-slate-100'
+            }`}
+          >
+            <Wrench className="w-4 h-4" />
+            <span className="flex-1 text-left">Cambios de clientes</span>
+            {expanded ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+          </button>
+
+          {expanded && (
+            <div className="ml-4 mt-0.5 space-y-0.5 border-l-2 border-slate-200 pl-2">
+              {subItems.map(({ to, icon: Icon, label }) => (
+                <NavLink
+                  key={to}
+                  to={to}
+                  end
+                  onClick={onClose}
+                  className={({ isActive }) =>
+                    `flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      isActive
+                        ? 'bg-indigo-50 text-indigo-700'
+                        : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100'
+                    }`
+                  }
+                >
+                  <Icon className="w-3.5 h-3.5" />
+                  {label}
+                </NavLink>
+              ))}
+            </div>
+          )}
+        </div>
       </nav>
 
       <div className="border-t border-slate-200 p-4 shrink-0">

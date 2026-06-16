@@ -5,6 +5,8 @@ import Layout from './components/Layout';
 import Dashboard from './pages/Dashboard';
 import Clients from './pages/Clients';
 import Login from './pages/Login';
+import Solicitudes from './pages/Solicitudes';
+import ModuleBuilder from './pages/ModuleBuilder';
 
 function AdminApp() {
   const [token, setToken] = useState(localStorage.getItem('platform_token'));
@@ -29,6 +31,8 @@ function AdminApp() {
           <Route element={<Layout token={token} onLogout={handleLogout} />}>
             <Route path="/" element={<Dashboard />} />
             <Route path="/clientes" element={<Clients />} />
+            <Route path="/cambios/solicitudes" element={<Solicitudes />} />
+            <Route path="/cambios/constructor" element={<ModuleBuilder />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
