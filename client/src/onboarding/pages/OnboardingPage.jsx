@@ -45,7 +45,7 @@ function isStepComplete(key, data, documents) {
     case 'socialLinks':
       return Object.values(data || {}).filter(Boolean).length >= 3;
     case 'branding':
-      return !!(data.businessName && data.description && data.primary && data.secondary);
+      return !!(data.businessName && data.description && data.colors);
     default:
       return false;
   }
@@ -80,8 +80,8 @@ function getStepPercentage(key, data, documents) {
       return filled > 0 ? Math.round((filled / socialKeys.length) * 100) : 0;
     }
     case 'branding': {
-      const brandFields = [data.businessName, data.description, data.primary, data.secondary];
-      const brandWeight = [35, 35, 15, 15];
+      const brandFields = [data.businessName, data.description, data.colors];
+      const brandWeight = [35, 35, 30];
       return brandFields.reduce((sum, f, i) => sum + (f ? brandWeight[i] : 0), 0);
     }
     default:
@@ -397,7 +397,7 @@ function OnboardingPage() {
             <CheckCircle className="text-blue-600" size={32} />
           </div>
           <h1 className="text-xl font-bold text-slate-800 mb-4">
-            Bienvenido al formulario de tu futura app
+            {client?.business_name ? `¡Hola ${client.business_name}!` : 'Bienvenido al formulario de tu futura app'}
           </h1>
           <p className="text-slate-500 leading-relaxed mb-8">
             Antes de comenzar tené en cuenta que no es obligatorio completar

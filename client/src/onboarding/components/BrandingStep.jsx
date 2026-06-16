@@ -1,16 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import FileUpload from '../../shared/components/FileUpload';
-import { Info } from 'lucide-react';
 
 const API_BASE = import.meta.env.VITE_API_URL || '/api';
 
 const PRESET_COLORS = [
-  { name: 'Azul', primary: '#2563eb', secondary: '#1e40af' },
-  { name: 'Verde', primary: '#059669', secondary: '#047857' },
-  { name: 'Violeta', primary: '#7c3aed', secondary: '#5b21b6' },
-  { name: 'Rojo', primary: '#dc2626', secondary: '#991b1b' },
-  { name: 'Naranja', primary: '#ea580c', secondary: '#c2410c' },
-  { name: 'Rosa', primary: '#db2777', secondary: '#9d174d' },
+  { name: 'Azul',     primary: '#2563eb', secondary: '#1d4ed8', accent: '#f59e0b' },
+  { name: 'Verde',    primary: '#10b981', secondary: '#059669', accent: '#f97316' },
+  { name: 'Violeta',  primary: '#7c3aed', secondary: '#6d28d9', accent: '#f43f5e' },
+  { name: 'Rojo',     primary: '#dc2626', secondary: '#b91c1c', accent: '#fbbf24' },
+  { name: 'Naranja',  primary: '#f97316', secondary: '#ea580c', accent: '#06b6d4' },
+  { name: 'Cian',     primary: '#06b6d4', secondary: '#0891b2', accent: '#8b5cf6' },
+  { name: 'Rosa',     primary: '#ec4899', secondary: '#be185d', accent: '#6366f1' },
+  { name: 'Gris',     primary: '#4b5563', secondary: '#1f2937', accent: '#eab308' },
 ];
 
 async function fetchDocuments(token) {
@@ -23,8 +24,7 @@ function BrandingStep({ data, onChange, token }) {
   const [logoFiles, setLogoFiles] = useState([]);
   const [faviconFiles, setFaviconFiles] = useState([]);
   const branding = data || {};
-  const primary = branding.primary || '#2563eb';
-  const secondary = branding.secondary || '#1e40af';
+  const colors = branding.colors || null;
 
   useEffect(() => {
     fetchDocuments(token)
@@ -39,8 +39,12 @@ function BrandingStep({ data, onChange, token }) {
     onChange({ ...branding, [key]: value });
   }
 
-  function applyPreset(p, s) {
-    onChange({ ...branding, primary: p, secondary: s });
+  function applyPreset(p, s, a) {
+    onChange({ ...branding, colors: { primary: p, secondary: s, accent: a } });
+  }
+
+  function clearColors() {
+    onChange({ ...branding, colors: null });
   }
 
   return (
@@ -103,81 +107,38 @@ function BrandingStep({ data, onChange, token }) {
           Colores
         </label>
 
-        <div>
-          <label className="block text-xs font-medium text-slate-500 mb-1">
-            Color primario
-          </label>
-          <div className="flex items-center gap-3 mb-4">
-            <input
-              type="color"
-              value={primary}
-              onChange={(e) => update('primary', e.target.value)}
-              className="w-12 h-10 rounded border cursor-pointer"
-            />
-            <input
-              type="text"
-              value={primary}
-              onChange={(e) => update('primary', e.target.value)}
-              placeholder="#2563eb"
-              className="flex-1 px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm font-mono"
-            />
-          </div>
-        </div>
-
-        <div>
-          <label className="block text-xs font-medium text-slate-500 mb-1">
-            Color secundario
-          </label>
-          <div className="flex items-center gap-3 mb-4">
-            <input
-              type="color"
-              value={secondary}
-              onChange={(e) => update('secondary', e.target.value)}
-              className="w-12 h-10 rounded border cursor-pointer"
-            />
-            <input
-              type="text"
-              value={secondary}
-              onChange={(e) => update('secondary', e.target.value)}
-              placeholder="#1e40af"
-              className="flex-1 px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm font-mono"
-            />
-          </div>
-        </div>
-
-        <div className="mb-4">
-          <label className="block text-xs font-medium text-slate-500 mb-2">
-            Combinaciones predefinidas
-          </label>
-          <div className="grid grid-cols-3 gap-3">
-            {PRESET_COLORS.map((preset) => (
+        <div className="grid grid-cols-2 gap-3 mb-4">
+          {PRESET_COLORS.map((preset) => {
+            const isSelected = colors?.primary === preset.primary && colors?.secondary === preset.secondary;
+            return (
               <button
                 key={preset.name}
-                onClick={() => applyPreset(preset.primary, preset.secondary)}
-                className="p-3 rounded-lg border border-slate-200 hover:border-blue-400 transition-colors text-center"
+                onClick={() => applyPreset(preset.primary, preset.secondary, preset.accent)}
+                className={`p-3 rounded-lg border transition-colors text-center ${
+                  isSelected
+                    ? 'border-blue-400 bg-blue-50 ring-2 ring-blue-200'
+                    : 'border-slate-200 hover:border-blue-300'
+                }`}
               >
-                <div className="flex gap-1 justify-center mb-1.5">
-                  <div
-                    className="w-5 h-5 rounded-full"
-                    style={{ backgroundColor: preset.primary }}
-                  />
-                  <div
-                    className="w-5 h-5 rounded-full"
-                    style={{ backgroundColor: preset.secondary }}
-                  />
+                <div className="flex gap-1.5 justify-center mb-1.5">
+                  <div className="w-5 h-5 rounded-full" style={{ backgroundColor: preset.primary }} />
+                  <div className="w-5 h-5 rounded-full" style={{ backgroundColor: preset.secondary }} />
+                  <div className="w-5 h-5 rounded-full" style={{ backgroundColor: preset.accent }} />
                 </div>
                 <span className="text-xs text-slate-600">{preset.name}</span>
               </button>
-            ))}
-          </div>
+            );
+          })}
         </div>
 
-        <div className="flex items-start gap-2 p-4 bg-blue-50 border border-blue-100 rounded-lg">
-          <Info size={16} className="text-blue-500 mt-0.5 shrink-0" />
-          <p className="text-sm text-blue-700">
-            Si no estás seguro lo podemos charlar luego.
-          </p>
-        </div>
+        <button
+          onClick={clearColors}
+          className={`w-full p-3 rounded-lg border text-sm text-slate-500 hover:bg-slate-50 transition-colors ${
+            !colors ? 'border-blue-400 bg-blue-50 ring-2 ring-blue-200' : 'border-dashed border-slate-300'
+          }`}
+        >
+          No estoy seguro, lo charlamos después
+        </button>
       </div>
     </div>
   );

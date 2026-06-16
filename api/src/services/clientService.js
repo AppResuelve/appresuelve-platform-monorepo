@@ -333,8 +333,6 @@ export async function syncSections(clientId, sections) {
       await call('seed-settings', {
         businessName: branding.businessName,
         description: branding.description,
-        primaryColor: branding.primary,
-        secondaryColor: branding.secondary || branding.accent,
         logoUrl: logoDoc?.fileUrl || null,
         faviconUrl: faviconDoc?.fileUrl || null,
         storeStatus: 'active',

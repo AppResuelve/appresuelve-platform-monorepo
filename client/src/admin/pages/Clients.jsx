@@ -8,8 +8,9 @@ import {
   AlertCircle,
   Pencil,
   X,
-  RotateCw,
+  RefreshCw,
   Trash2,
+  UserPlus,
 } from "lucide-react";
 import { apiFetch } from "../../shared/api.js";
 import { SERVICE_TYPES } from "../../shared/constants.js";
@@ -455,7 +456,7 @@ function Clients() {
                     Admin
                   </th>
                   <th className="text-left px-6 py-4 text-sm font-semibold text-slate-600">
-                    Link
+                    Link Onboarding
                   </th>
                   <th className="text-left px-6 py-4 text-sm font-semibold text-slate-600">
                     Creado
@@ -492,18 +493,19 @@ function Clients() {
                     </td>
                     <td className="px-6 py-4">
                       {client.admin_status === "active" ? (
-                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700 whitespace-nowrap">
                           ✓ Activo
                         </span>
                       ) : client.admin_status === "error" ? (
-                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700">
+                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700 whitespace-nowrap">
                           ✗ Error
                         </span>
                       ) : client.api_url ? (
                         <button
                           onClick={() => handleCreateAdmin(client)}
-                          className="px-2 py-1 rounded text-xs font-medium bg-indigo-100 text-indigo-700 hover:bg-indigo-200 transition-colors"
+                          className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium bg-indigo-100 text-indigo-700 hover:bg-indigo-200 transition-colors whitespace-nowrap"
                         >
+                          <UserPlus size={12} />
                           Crear admin
                         </button>
                       ) : (
@@ -512,6 +514,15 @@ function Clients() {
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-1 min-w-[160px]">
+                        <a
+                          href={buildInviteLink(client.invite_token)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="p-1 text-slate-400 hover:text-slate-600 shrink-0"
+                          title="Abrir enlace"
+                        >
+                          <ExternalLink size={14} />
+                        </a>
                         <button
                           onClick={() => copyLink(client.invite_token)}
                           className="p-1 text-slate-400 hover:text-slate-600 shrink-0"
@@ -553,19 +564,10 @@ function Clients() {
                             className="p-2 text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
                             title="Sincronizar"
                           >
-                            <RotateCw size={18} />
-                          </button>
-                        )}
-                        <a
-                          href={buildInviteLink(client.invite_token)}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="p-2 text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors"
-                          title="Abrir enlace"
-                        >
-                          <ExternalLink size={18} />
-                        </a>
-                        <button
+                        <RefreshCw size={18} />
+                        </button>
+                      )}
+                      <button
                           onClick={() => handleDelete(client)}
                           className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                           title="Eliminar"
