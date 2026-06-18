@@ -31,12 +31,12 @@ function ProductsStep({ data, onChange, token }) {
     <div className="space-y-6">
       <div>
         <div className="flex items-center gap-2 mb-2">
-          <FileText size={18} className="text-slate-400" />
-          <label className="text-sm font-medium text-slate-700">
+          <FileText size={18} className="text-[var(--color-text-muted)]" />
+          <label className="text-sm font-medium text-[var(--color-text-primary)]">
             Catálogo / Lista de productos
           </label>
         </div>
-        <p className="text-xs text-slate-400 mb-3">
+        <p className="text-xs text-[var(--color-text-muted)] mb-3">
           Excel, PDF o Word con tu lista de productos y precios
         </p>
         <FileUpload
@@ -50,12 +50,12 @@ function ProductsStep({ data, onChange, token }) {
 
       <div>
         <div className="flex items-center gap-2 mb-2">
-          <Image size={18} className="text-slate-400" />
-          <label className="text-sm font-medium text-slate-700">
+          <Image size={18} className="text-[var(--color-text-muted)]" />
+          <label className="text-sm font-medium text-[var(--color-text-primary)]">
             Imágenes de productos
           </label>
         </div>
-        <p className="text-xs text-slate-400 mb-3">
+        <p className="text-xs text-[var(--color-text-muted)] mb-3">
           Fotos de tus productos. Mientras más, mejor.
         </p>
         <FileUpload

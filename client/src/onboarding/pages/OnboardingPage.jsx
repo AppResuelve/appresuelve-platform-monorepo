@@ -98,7 +98,7 @@ function SidebarStep({ index, label, isCurrent, isComplete, isPast, onClick }) {
     <button
       onClick={onClick}
       className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-colors ${
-        isCurrent ? 'bg-blue-50' : 'hover:bg-slate-50'
+        isCurrent ? 'bg-indigo-50 dark:bg-indigo-950' : 'hover:bg-[var(--color-bg-elevated)]'
       }`}
     >
       <div
@@ -106,8 +106,8 @@ function SidebarStep({ index, label, isCurrent, isComplete, isPast, onClick }) {
           isComplete
             ? 'bg-green-500 text-white'
             : isCurrent
-            ? 'bg-blue-600 text-white'
-            : 'bg-slate-200 text-slate-400'
+            ? 'bg-[var(--color-primary)] text-white'
+            : 'bg-[var(--color-bg-section)] text-[var(--color-text-muted)]'
         }`}
       >
         {isComplete ? <Check size={14} /> : index + 1}
@@ -115,10 +115,10 @@ function SidebarStep({ index, label, isCurrent, isComplete, isPast, onClick }) {
       <span
         className={`text-sm ${
           isCurrent
-            ? 'text-blue-700 font-medium'
+            ? 'text-[var(--color-primary)] font-medium'
             : isComplete
-            ? 'text-green-700'
-            : 'text-slate-500'
+            ? 'text-green-600 dark:text-green-400'
+            : 'text-[var(--color-text-muted)]'
         }`}
       >
         {label}
@@ -133,19 +133,19 @@ function StepFooter({ step, totalSteps, isLastStep, onPrev, onNext }) {
       <button
         onClick={onPrev}
         disabled={step === 0}
-        className="flex items-center gap-1.5 px-3 py-2.5 text-base text-slate-600 hover:text-slate-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+        className="flex items-center gap-1.5 px-3 py-2.5 text-base text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
       >
         <ArrowLeft size={18} />
         <span className="hidden sm:inline">Anterior</span>
       </button>
 
-      <span className="text-sm text-slate-400 font-medium">
+      <span className="text-sm text-[var(--color-text-muted)] font-medium">
         {step + 1} / {totalSteps}
       </span>
 
       <button
         onClick={onNext}
-        className="flex items-center gap-1.5 px-5 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-base font-medium"
+        className="flex items-center gap-1.5 px-5 py-2.5 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary-hover)] transition-colors text-base font-medium"
       >
         {isLastStep ? (
           <>
@@ -174,6 +174,7 @@ function OnboardingPage() {
   const [finished, setFinished] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [showIntro, setShowIntro] = useState(false);
+  const [expired, setExpired] = useState(false);
 
   const formDataRef = useRef(formData);
   formDataRef.current = formData;
@@ -183,6 +184,11 @@ function OnboardingPage() {
       try {
         const clientData = await getClientByToken(hash);
         setClient(clientData);
+
+        if (clientData.admin_status === 'active') {
+          setExpired(true);
+          return;
+        }
 
         const saved = clientData.form_data || {};
 
@@ -248,6 +254,7 @@ function OnboardingPage() {
   }
 
   function updateSection(section, data) {
+    if (expired) return;
     setFormData((prev) => {
       const next = { ...prev, [section]: data };
       triggerSave(next);
@@ -278,6 +285,7 @@ function OnboardingPage() {
   }
 
   async function acceptIntro() {
+    if (expired) return;
     try {
       await saveOnboardingData(hash, { ...formData, intro_accepted: true });
     } catch {
@@ -296,10 +304,10 @@ function OnboardingPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+      <div className="min-h-screen bg-[var(--color-bg-base)] flex items-center justify-center">
         <div className="text-center">
-          <Loader2 className="animate-spin mx-auto mb-4 text-blue-600" size={40} />
-          <p className="text-slate-500">Cargando...</p>
+          <Loader2 className="animate-spin mx-auto mb-4 text-[var(--color-primary)]" size={40} />
+          <p className="text-[var(--color-text-muted)]">Cargando...</p>
         </div>
       </div>
     );
@@ -307,13 +315,31 @@ function OnboardingPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-[var(--color-bg-base)] flex items-center justify-center p-4">
         <div className="text-center max-w-md">
-          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <div className="w-16 h-16 bg-red-100 dark:bg-red-950 rounded-full flex items-center justify-center mx-auto mb-4">
             <AlertCircle className="text-red-500" size={32} />
           </div>
-          <h1 className="text-xl font-bold text-slate-800 mb-2">Link inválido</h1>
-          <p className="text-slate-500">{error}</p>
+          <h1 className="text-xl font-bold text-[var(--color-text-primary)] mb-2">Link inválido</h1>
+          <p className="text-[var(--color-text-muted)]">{error}</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (expired) {
+    return (
+      <div className="min-h-screen bg-[var(--color-bg-base)] flex items-center justify-center p-4">
+        <div className="text-center max-w-md">
+          <div className="w-16 h-16 bg-[var(--color-bg-section)] rounded-full flex items-center justify-center mx-auto mb-6">
+            <AlertCircle className="text-[var(--color-text-muted)]" size={32} />
+          </div>
+          <h1 className="text-xl font-bold text-[var(--color-text-primary)] mb-4">
+            Este enlace ya no está disponible
+          </h1>
+          <p className="text-[var(--color-text-muted)] leading-relaxed">
+            Podés modificar los datos de tu sitio desde tu panel de administración.
+          </p>
         </div>
       </div>
     );
@@ -321,23 +347,23 @@ function OnboardingPage() {
 
   if (finished) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-[var(--color-bg-base)] flex items-center justify-center p-4">
         <div className="w-full max-w-lg">
           <div className="text-center mb-8">
-            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className="w-16 h-16 bg-green-100 dark:bg-green-950 rounded-full flex items-center justify-center mx-auto mb-4">
               <CheckCircle className="text-green-500" size={32} />
             </div>
-            <h1 className="text-xl font-bold text-slate-800 mb-2">¡Listo!</h1>
-            <p className="text-slate-500">Ya recibimos toda la información.</p>
+            <h1 className="text-xl font-bold text-[var(--color-text-primary)] mb-2">¡Listo!</h1>
+            <p className="text-[var(--color-text-muted)]">Ya recibimos toda la información.</p>
             {client?.business_name && (
-              <p className="text-slate-400 text-sm mt-1">
+              <p className="text-[var(--color-text-muted)] text-sm mt-1">
                 Gracias {client.business_name}.
               </p>
             )}
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 mb-6">
-            <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4">
+          <div className="bg-[var(--color-bg-card)] rounded-xl shadow-sm border border-[var(--color-border)] p-6 mb-6">
+            <h3 className="text-xs font-semibold text-[var(--color-text-muted)] uppercase tracking-wider mb-4">
               Resumen
             </h3>
             <div className="space-y-3">
@@ -351,26 +377,26 @@ function OnboardingPage() {
                   percentage >= 100
                     ? 'bg-green-500'
                     : percentage >= 40
-                    ? 'bg-blue-500'
+                    ? 'bg-[var(--color-primary)]'
                     : 'bg-yellow-500';
 
                 return (
                   <div key={s.key} className="flex items-center gap-3">
-                    <span className="text-sm font-medium text-slate-700 w-28 shrink-0">
+                    <span className="text-sm font-medium text-[var(--color-text-secondary)] w-28 shrink-0">
                       {s.label}
                     </span>
-                    <div className="flex-1 h-2 bg-slate-200 rounded-full overflow-hidden">
+                    <div className="flex-1 h-2 bg-[var(--color-bg-section)] rounded-full overflow-hidden">
                       <div
                         className={`h-full ${barColor} transition-all`}
                         style={{ width: `${percentage}%` }}
                       />
                     </div>
-                    <span className="text-xs text-slate-400 w-8 text-right">
+                    <span className="text-xs text-[var(--color-text-muted)] w-8 text-right">
                       {percentage}%
                     </span>
                     <button
                       onClick={() => editStep(i)}
-                      className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors shrink-0"
+                      className="p-1.5 text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-elevated)] rounded-lg transition-colors shrink-0"
                       title={`Editar ${s.label}`}
                     >
                       <Pencil size={16} />
@@ -381,7 +407,7 @@ function OnboardingPage() {
             </div>
           </div>
 
-          <p className="text-center text-sm text-slate-400">
+          <p className="text-center text-sm text-[var(--color-text-muted)]">
             Esta información está siendo revisada por AppResuelve
           </p>
         </div>
@@ -391,22 +417,22 @@ function OnboardingPage() {
 
   if (showIntro) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-[var(--color-bg-base)] flex items-center justify-center p-4">
         <div className="text-center max-w-md">
-          <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
-            <CheckCircle className="text-blue-600" size={32} />
+          <div className="w-16 h-16 bg-indigo-50 dark:bg-indigo-950 rounded-full flex items-center justify-center mx-auto mb-6">
+            <CheckCircle className="text-[var(--color-primary)]" size={32} />
           </div>
-          <h1 className="text-xl font-bold text-slate-800 mb-4">
+          <h1 className="text-xl font-bold text-[var(--color-text-primary)] mb-4">
             {client?.business_name ? `¡Hola ${client.business_name}!` : 'Bienvenido al formulario de tu futura app'}
           </h1>
-          <p className="text-slate-500 leading-relaxed mb-8">
+          <p className="text-[var(--color-text-muted)] leading-relaxed mb-8">
             Antes de comenzar tené en cuenta que no es obligatorio completar
             todo. Pero mientras más completes, más rápido y acertado será el
             resultado de tu sitio web.
           </p>
           <button
             onClick={acceptIntro}
-            className="px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-base font-medium"
+            className="px-8 py-3 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary-hover)] transition-colors text-base font-medium"
           >
             Entendido
           </button>
@@ -419,10 +445,13 @@ function OnboardingPage() {
   const isLastStep = step === STEPS.length - 1;
 
   const renderContent = () => (
-    <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4 md:p-6">
-      <h2 className="text-base font-semibold text-slate-800 mb-4">
-        {STEPS[step].label}
-      </h2>
+    <div className="bg-[var(--color-bg-card)] rounded-xl shadow-sm border border-[var(--color-border)] p-4 md:p-6">
+      <div className="flex items-center gap-2 mb-4">
+        <h2 className="text-base font-semibold text-[var(--color-text-primary)]">
+          Datos para tu sitio
+        </h2>
+        <SaveIndicator status={saveStatus} />
+      </div>
       {step === STEPS.length - 1 ? (
         <BrandingStep
           data={formData.branding}
@@ -440,22 +469,23 @@ function OnboardingPage() {
   );
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-[var(--color-bg-base)] relative overflow-hidden">
+      {/* Decorative blur circle */}
+      <div className="fixed top-[20%] right-[-150px] w-[400px] h-[400px] rounded-full bg-[var(--color-primary)] blur-[120px] opacity-[0.06] pointer-events-none" />
+
       {/* ========== MOBILE: Top bar ========== */}
-      <header className="md:hidden sticky top-0 z-30 bg-white border-b border-slate-200">
+      <header className="md:hidden sticky top-0 z-30 bg-[var(--color-bg-card)] border-b border-[var(--color-border)]">
         <div className="flex items-center justify-between px-4 py-3">
-          <h1 className="text-base font-bold text-slate-800">
-            Datos de tu app
-          </h1>
-          <div className="flex items-center gap-3">
-            <SaveIndicator status={saveStatus} />
-            <button
-              onClick={() => setMenuOpen(!menuOpen)}
-              className="p-1.5 text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors"
-            >
-              {menuOpen ? <X size={20} /> : <Menu size={20} />}
-            </button>
+          <div className="flex items-center gap-2">
+            <img src="https://res.cloudinary.com/dfun5vbsf/image/upload/v1779926864/logo_s-f_appresuleve_250px_ccbmqf.png" alt="AppResuelve" className="h-6 w-auto" />
+            <span className="text-sm font-semibold text-[var(--color-text-primary)]">AppResuelve <span className="text-[var(--color-text-muted)] font-normal">Formularios</span></span>
           </div>
+          <button
+            onClick={() => setMenuOpen(!menuOpen)}
+            className="p-1.5 text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-elevated)] rounded-lg transition-colors"
+          >
+            {menuOpen ? <X size={20} /> : <Menu size={20} />}
+          </button>
         </div>
 
         {menuOpen && (
@@ -464,7 +494,7 @@ function OnboardingPage() {
               className="fixed inset-0 z-20"
               onClick={() => setMenuOpen(false)}
             />
-            <div className="absolute top-full left-0 right-0 z-30 bg-white border-b border-slate-200 shadow-lg">
+            <div className="absolute top-full left-0 right-0 z-30 bg-[var(--color-bg-card)] border-b border-[var(--color-border)] shadow-lg">
               <div className="max-h-[60vh] overflow-y-auto px-4 py-3">
                 <div className="grid grid-cols-1 gap-1">
                   {STEPS.map((s, i) => (
@@ -486,7 +516,7 @@ function OnboardingPage() {
       </header>
 
       {/* ========== MOBILE: Dots ========== */}
-      <div className="md:hidden px-4 py-3 bg-slate-50">
+      <div className="md:hidden px-4 py-3 bg-[var(--color-bg-base)]">
         <StepIndicator
           totalSteps={STEPS.length}
           currentStep={step}
@@ -497,12 +527,12 @@ function OnboardingPage() {
       {/* ========== LAYOUT ========== */}
       <div className="flex flex-col md:flex-row">
         {/* ========== DESKTOP: Sidebar ========== */}
-        <aside className="hidden md:flex md:flex-col md:w-56 md:sticky md:top-0 md:h-screen md:border-r md:border-slate-200 md:bg-white md:shrink-0">
-          <div className="px-4 py-4 border-b border-slate-100">
-            <h1 className="text-base font-bold text-slate-800 mb-1">
-              Datos de tu app
-            </h1>
-            <SaveIndicator status={saveStatus} />
+        <aside className="hidden md:flex md:flex-col md:w-56 md:sticky md:top-0 md:h-screen md:border-r md:border-[var(--color-border)] md:bg-[var(--color-bg-card)] md:shrink-0">
+          <div className="px-4 py-4 border-b border-[var(--color-border)]">
+            <div className="flex items-center gap-2">
+              <img src="https://res.cloudinary.com/dfun5vbsf/image/upload/v1779926864/logo_s-f_appresuleve_250px_ccbmqf.png" alt="AppResuelve" className="h-6 w-auto" />
+              <span className="text-sm font-semibold text-[var(--color-text-primary)]">AppResuelve <span className="text-[var(--color-text-muted)] font-normal">Formularios</span></span>
+            </div>
           </div>
           <nav className="flex-1 overflow-y-auto px-3 py-3 space-y-0.5">
             {STEPS.map((s, i) => (
@@ -525,7 +555,7 @@ function OnboardingPage() {
             {renderContent()}
           </main>
 
-          <footer className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 z-30 md:left-56">
+          <footer className="fixed bottom-0 left-0 right-0 bg-[var(--color-bg-card)] border-t border-[var(--color-border)] z-30 md:left-56">
             <div className="md:max-w-2xl md:mx-auto">
               <StepFooter
                 step={step}

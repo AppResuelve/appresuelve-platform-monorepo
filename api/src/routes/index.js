@@ -11,6 +11,7 @@ import {
   UpdateCategorySchema,
   CreateComponentSchema,
   UpdateComponentSchema,
+  UpdateBillingSchema,
 } from '../validations/index.js';
 import { validate } from '../middleware/validate.js';
 import * as clientsController from '../controllers/clientsController.js';
@@ -50,6 +51,7 @@ router.put('/clients/:id', authMiddleware, validate(UpdateClientSchema), clients
 router.delete('/clients/:id', authMiddleware, clientsController.remove);
 router.post('/clients/:id/create-admin', authMiddleware, clientsController.createAdmin);
 router.post('/clients/:id/sync', authMiddleware, clientsController.sync);
+router.put('/clients/:id/billing', authMiddleware, validate(UpdateBillingSchema), clientsController.updateBilling);
 
 // Onboarding
 router.get('/onboarding/:token', onboardingController.getByToken);

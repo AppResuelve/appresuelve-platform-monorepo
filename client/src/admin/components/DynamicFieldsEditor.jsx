@@ -78,11 +78,11 @@ export default function DynamicFieldsEditor({ fields = [], onChange }) {
   return (
     <div>
       <div className="flex items-center justify-between mb-3">
-        <label className="text-sm font-medium text-slate-700">Campos del formulario</label>
+        <label className="text-sm font-medium text-[var(--color-text-secondary)]">Campos del formulario</label>
         <button
           type="button"
           onClick={handleAdd}
-          className="inline-flex items-center gap-1.5 text-xs font-medium text-indigo-600 hover:text-indigo-700"
+          className="inline-flex items-center gap-1.5 text-xs font-medium text-[var(--color-primary)] hover:text-[var(--color-primary-hover)]"
         >
           <Plus className="w-3.5 h-3.5" />
           Agregar campo
@@ -90,8 +90,8 @@ export default function DynamicFieldsEditor({ fields = [], onChange }) {
       </div>
 
       {fields.length === 0 && !editField && (
-        <div className="text-center py-6 border-2 border-dashed border-slate-200 rounded-lg">
-          <p className="text-sm text-slate-400">No hay campos definidos. Agregá el primero.</p>
+        <div className="text-center py-6 border-2 border-dashed border-[var(--color-border)] rounded-lg">
+          <p className="text-sm text-[var(--color-text-muted)]">No hay campos definidos. Agregá el primero.</p>
         </div>
       )}
 
@@ -99,15 +99,15 @@ export default function DynamicFieldsEditor({ fields = [], onChange }) {
         {fields.map((field, index) => (
           <div
             key={field.key || index}
-            className="flex items-center gap-3 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2.5 group"
+            className="flex items-center gap-3 bg-[var(--color-bg-section)] border border-[var(--color-border)] rounded-lg px-3 py-2.5 group"
           >
-            <GripVertical className="w-4 h-4 text-slate-300 shrink-0" />
+            <GripVertical className="w-4 h-4 text-[var(--color-text-muted)] shrink-0" />
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-slate-700 truncate">
+                <span className="text-sm font-medium text-[var(--color-text-secondary)] truncate">
                   {field.label || field.key}
                 </span>
-                <span className="text-xs text-slate-400 bg-slate-200 px-1.5 py-0.5 rounded">
+                <span className="text-xs text-[var(--color-text-muted)] bg-[var(--color-bg-elevated)] px-1.5 py-0.5 rounded">
                   {FIELD_TYPES.find((t) => t.value === field.type)?.label || field.type}
                 </span>
                 {field.required && (
@@ -115,14 +115,14 @@ export default function DynamicFieldsEditor({ fields = [], onChange }) {
                 )}
               </div>
               {field.key && (
-                <p className="text-xs text-slate-400 mt-0.5">key: {field.key}</p>
+                <p className="text-xs text-[var(--color-text-muted)] mt-0.5">key: {field.key}</p>
               )}
             </div>
             <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
               <button
                 type="button"
                 onClick={() => handleMove(index, -1)}
-                className="p-1 rounded text-slate-400 hover:text-slate-600 hover:bg-slate-200"
+                className="p-1 rounded text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-elevated)]"
                 disabled={index === 0}
               >
                 <MoveUp className="w-3.5 h-3.5" />
@@ -130,7 +130,7 @@ export default function DynamicFieldsEditor({ fields = [], onChange }) {
               <button
                 type="button"
                 onClick={() => handleMove(index, 1)}
-                className="p-1 rounded text-slate-400 hover:text-slate-600 hover:bg-slate-200"
+                className="p-1 rounded text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-elevated)]"
                 disabled={index === fields.length - 1}
               >
                 <MoveDown className="w-3.5 h-3.5" />
@@ -138,14 +138,14 @@ export default function DynamicFieldsEditor({ fields = [], onChange }) {
               <button
                 type="button"
                 onClick={() => handleEdit(index)}
-                className="p-1 rounded text-slate-400 hover:text-indigo-600 hover:bg-slate-200"
+                className="p-1 rounded text-[var(--color-text-muted)] hover:text-[var(--color-primary)] hover:bg-indigo-50 dark:hover:bg-indigo-950"
               >
                 <span className="text-xs px-1">Editar</span>
               </button>
               <button
                 type="button"
                 onClick={() => handleDelete(index)}
-                className="p-1 rounded text-slate-400 hover:text-red-500 hover:bg-red-50"
+                className="p-1 rounded text-[var(--color-text-muted)] hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950"
               >
                 <Trash2 className="w-3.5 h-3.5" />
               </button>
@@ -156,34 +156,34 @@ export default function DynamicFieldsEditor({ fields = [], onChange }) {
 
       {/* Edit modal */}
       {editField && (
-        <div className="bg-white border border-slate-200 rounded-lg p-4 space-y-3">
+        <div className="bg-[var(--color-bg-card)] border border-[var(--color-border)] rounded-lg p-4 space-y-3">
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-medium text-slate-600 mb-1">Key</label>
+              <label className="block text-xs font-medium text-[var(--color-text-muted)] mb-1">Key</label>
               <input
                 type="text"
                 value={editField.key}
                 onChange={(e) => handleFieldChange('key', e.target.value)}
                 placeholder="Ej: headline"
-                className="w-full px-2.5 py-1.5 text-sm border border-slate-300 rounded-md focus:outline-none focus:border-indigo-500"
+                className="w-full px-2.5 py-1.5 text-sm border border-[var(--color-border)] rounded-md bg-[var(--color-bg-card)] text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary)]"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-600 mb-1">Label</label>
+              <label className="block text-xs font-medium text-[var(--color-text-muted)] mb-1">Label</label>
               <input
                 type="text"
                 value={editField.label}
                 onChange={(e) => handleFieldChange('label', e.target.value)}
                 placeholder="Ej: Título principal"
-                className="w-full px-2.5 py-1.5 text-sm border border-slate-300 rounded-md focus:outline-none focus:border-indigo-500"
+                className="w-full px-2.5 py-1.5 text-sm border border-[var(--color-border)] rounded-md bg-[var(--color-bg-card)] text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary)]"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-600 mb-1">Tipo</label>
+              <label className="block text-xs font-medium text-[var(--color-text-muted)] mb-1">Tipo</label>
               <select
                 value={editField.type}
                 onChange={(e) => handleFieldChange('type', e.target.value)}
-                className="w-full px-2.5 py-1.5 text-sm border border-slate-300 rounded-md focus:outline-none focus:border-indigo-500"
+                className="w-full px-2.5 py-1.5 text-sm border border-[var(--color-border)] rounded-md bg-[var(--color-bg-card)] text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary)]"
               >
                 {FIELD_TYPES.map((t) => (
                   <option key={t.value} value={t.value}>{t.label}</option>
@@ -191,23 +191,23 @@ export default function DynamicFieldsEditor({ fields = [], onChange }) {
               </select>
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-600 mb-1">Placeholder</label>
+              <label className="block text-xs font-medium text-[var(--color-text-muted)] mb-1">Placeholder</label>
               <input
                 type="text"
                 value={editField.placeholder || ''}
                 onChange={(e) => handleFieldChange('placeholder', e.target.value)}
                 placeholder="Texto de ayuda..."
-                className="w-full px-2.5 py-1.5 text-sm border border-slate-300 rounded-md focus:outline-none focus:border-indigo-500"
+                className="w-full px-2.5 py-1.5 text-sm border border-[var(--color-border)] rounded-md bg-[var(--color-bg-card)] text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary)]"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-600 mb-1">Texto de ayuda</label>
+              <label className="block text-xs font-medium text-[var(--color-text-muted)] mb-1">Texto de ayuda</label>
               <input
                 type="text"
                 value={editField.helpText || ''}
                 onChange={(e) => handleFieldChange('helpText', e.target.value)}
                 placeholder="Info extra para el usuario..."
-                className="w-full px-2.5 py-1.5 text-sm border border-slate-300 rounded-md focus:outline-none focus:border-indigo-500"
+                className="w-full px-2.5 py-1.5 text-sm border border-[var(--color-border)] rounded-md bg-[var(--color-bg-card)] text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary)]"
               />
             </div>
             <div className="flex items-end gap-4">
@@ -216,16 +216,16 @@ export default function DynamicFieldsEditor({ fields = [], onChange }) {
                   type="checkbox"
                   checked={editField.required || false}
                   onChange={(e) => handleFieldChange('required', e.target.checked)}
-                  className="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                  className="w-4 h-4 rounded border-[var(--color-border)] text-[var(--color-primary)] focus:ring-[var(--color-primary)]"
                 />
-                <span className="text-xs font-medium text-slate-600">Requerido</span>
+                <span className="text-xs font-medium text-[var(--color-text-muted)]">Requerido</span>
               </label>
             </div>
           </div>
 
           {editField.type === 'select' && (
             <div>
-              <label className="block text-xs font-medium text-slate-600 mb-1">
+              <label className="block text-xs font-medium text-[var(--color-text-muted)] mb-1">
                 Opciones (una por línea, formato: label|value)
               </label>
               <textarea
@@ -242,7 +242,7 @@ export default function DynamicFieldsEditor({ fields = [], onChange }) {
                 }}
                 rows={3}
                 placeholder="Chico|small&#10;Mediano|medium&#10;Grande|large"
-                className="w-full px-2.5 py-1.5 text-sm border border-slate-300 rounded-md focus:outline-none focus:border-indigo-500 font-mono"
+                className="w-full px-2.5 py-1.5 text-sm border border-[var(--color-border)] rounded-md bg-[var(--color-bg-card)] text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary)] font-mono"
               />
             </div>
           )}
@@ -251,7 +251,7 @@ export default function DynamicFieldsEditor({ fields = [], onChange }) {
             <button
               type="button"
               onClick={() => { setEditingIndex(null); setEditField(null) }}
-              className="px-3 py-1.5 text-sm font-medium text-slate-600 hover:text-slate-800"
+              className="px-3 py-1.5 text-sm font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]"
             >
               Cancelar
             </button>
@@ -259,7 +259,7 @@ export default function DynamicFieldsEditor({ fields = [], onChange }) {
               type="button"
               onClick={handleSave}
               disabled={!editField.key.trim() || !editField.label.trim()}
-              className="px-3 py-1.5 text-sm font-medium bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-3 py-1.5 text-sm font-medium bg-[var(--color-primary)] text-white rounded-md hover:bg-[var(--color-primary-hover)] disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Guardar
             </button>

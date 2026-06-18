@@ -50,7 +50,7 @@ function BrandingStep({ data, onChange, token }) {
   return (
     <div className="space-y-6">
       <div>
-        <label className="block text-sm font-medium text-slate-700 mb-1">
+        <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-1">
           Nombre del negocio
         </label>
         <input
@@ -58,12 +58,12 @@ function BrandingStep({ data, onChange, token }) {
           value={branding.businessName || ''}
           onChange={(e) => update('businessName', e.target.value)}
           placeholder="Ej: Panadería El Trigo"
-          className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
+          className="w-full px-4 py-3 border border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] bg-[var(--color-bg-card)]"
         />
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-slate-700 mb-1">
+        <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-1">
           Descripción del negocio
         </label>
         <textarea
@@ -71,12 +71,12 @@ function BrandingStep({ data, onChange, token }) {
           onChange={(e) => update('description', e.target.value)}
           placeholder="Contanos brevemente sobre tu negocio, qué hacés, hace cuánto..."
           rows={4}
-          className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800 resize-none"
+          className="w-full px-4 py-3 border border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] bg-[var(--color-bg-card)] resize-none"
         />
       </div>
 
-      <div className="border-t border-slate-100 pt-6">
-        <label className="block text-sm font-medium text-slate-700 mb-2">
+      <div className="border-t border-[var(--color-border)] pt-6">
+        <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-2">
           Logo
         </label>
         <FileUpload
@@ -88,10 +88,10 @@ function BrandingStep({ data, onChange, token }) {
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-slate-700 mb-2">
+        <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-2">
           Favicon
         </label>
-        <p className="text-xs text-slate-400 mb-3">
+        <p className="text-xs text-[var(--color-text-muted)] mb-3">
           Opcional, pero si lo tenés, mejor. Aparece en la pestaña del navegador.
         </p>
         <FileUpload
@@ -102,8 +102,8 @@ function BrandingStep({ data, onChange, token }) {
         />
       </div>
 
-      <div className="border-t border-slate-100 pt-6">
-        <label className="block text-sm font-medium text-slate-700 mb-3">
+      <div className="border-t border-[var(--color-border)] pt-6">
+        <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-3">
           Colores
         </label>
 
@@ -116,8 +116,8 @@ function BrandingStep({ data, onChange, token }) {
                 onClick={() => applyPreset(preset.primary, preset.secondary, preset.accent)}
                 className={`p-3 rounded-lg border transition-colors text-center ${
                   isSelected
-                    ? 'border-blue-400 bg-blue-50 ring-2 ring-blue-200'
-                    : 'border-slate-200 hover:border-blue-300'
+                    ? 'border-blue-400 bg-blue-50 dark:bg-blue-950 ring-2 ring-blue-200 dark:ring-blue-800'
+                    : 'border-[var(--color-border)] hover:border-blue-300 dark:hover:border-blue-600'
                 }`}
               >
                 <div className="flex gap-1.5 justify-center mb-1.5">
@@ -125,7 +125,7 @@ function BrandingStep({ data, onChange, token }) {
                   <div className="w-5 h-5 rounded-full" style={{ backgroundColor: preset.secondary }} />
                   <div className="w-5 h-5 rounded-full" style={{ backgroundColor: preset.accent }} />
                 </div>
-                <span className="text-xs text-slate-600">{preset.name}</span>
+                <span className="text-xs text-[var(--color-text-secondary)]">{preset.name}</span>
               </button>
             );
           })}
@@ -133,8 +133,8 @@ function BrandingStep({ data, onChange, token }) {
 
         <button
           onClick={clearColors}
-          className={`w-full p-3 rounded-lg border text-sm text-slate-500 hover:bg-slate-50 transition-colors ${
-            !colors ? 'border-blue-400 bg-blue-50 ring-2 ring-blue-200' : 'border-dashed border-slate-300'
+          className={`w-full p-3 rounded-lg border text-sm text-[var(--color-text-muted)] hover:bg-[var(--color-bg-elevated)] transition-colors ${
+            !colors ? 'border-blue-400 bg-blue-50 dark:bg-blue-950 ring-2 ring-blue-200 dark:ring-blue-800' : 'border-dashed border-[var(--color-border)]'
           }`}
         >
           No estoy seguro, lo charlamos después

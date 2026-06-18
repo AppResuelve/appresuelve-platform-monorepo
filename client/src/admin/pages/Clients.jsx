@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Plus,
   Copy,
@@ -29,10 +30,10 @@ function Modal({ children, onClose }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black/40" onClick={onClose} />
-      <div className="relative bg-white rounded-xl shadow-xl w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto">
+      <div className="relative bg-[var(--color-bg-card)] rounded-xl shadow-xl w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto">
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 p-1 text-slate-400 hover:text-slate-600 transition-colors"
+          className="absolute top-4 right-4 p-1 text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] transition-colors"
         >
           <X size={20} />
         </button>
@@ -53,44 +54,44 @@ function ClientForm({
   return (
     <form onSubmit={onSubmit} className="space-y-4">
       <div>
-        <label className="block text-sm font-medium text-slate-700 mb-1">
+        <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">
           Nombre del negocio <span className="text-red-500">*</span>
         </label>
         <input
           type="text"
           value={data.businessName}
           onChange={(e) => onChange({ ...data, businessName: e.target.value })}
-          className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-bg-card)] text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
           required
         />
       </div>
       <div>
-        <label className="block text-sm font-medium text-slate-700 mb-1">
+        <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">
           Dirección
         </label>
         <input
           type="text"
           value={data.address || ""}
           onChange={(e) => onChange({ ...data, address: e.target.value })}
-          className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-bg-card)] text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
         />
       </div>
       <div>
-        <label className="block text-sm font-medium text-slate-700 mb-1">
+        <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">
           Email
         </label>
         <input
           type="email"
           value={data.email || ""}
           onChange={(e) => onChange({ ...data, email: e.target.value })}
-          className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-bg-card)] text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
         />
       </div>
       {extraFields}
       <button
         type="submit"
         disabled={submitting || !data.businessName?.trim()}
-        className="w-full px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors font-medium"
+        className="w-full px-6 py-2.5 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary-hover)] disabled:opacity-50 transition-colors font-medium"
       >
         {submitting ? "Guardando..." : submitLabel}
       </button>
@@ -98,7 +99,8 @@ function ClientForm({
   );
 }
 
-function Clients() {
+function Clients({ view = "onboarding" }) {
+  const navigate = useNavigate();
   const [clients, setClients] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -131,17 +133,15 @@ function Clients() {
   const [syncSelection, setSyncSelection] = useState({});
   const [syncing, setSyncing] = useState(false);
 
-  const [tab, setTab] = useState('todos');
-
   const [useHttps, setUseHttps] = useState(true);
   const [editUseHttps, setEditUseHttps] = useState(true);
 
-  const filteredClients = (() => {
-    if (tab === 'todos') return clients;
-    if (tab === 'onboarding') return clients.filter((c) => c.admin_status !== 'active');
-    if (tab === 'activos') return clients.filter((c) => c.admin_status === 'active');
-    return clients;
-  })();
+  const isOnboarding = view === "onboarding";
+  const isActivos = view === "activos";
+
+  const filteredClients = isOnboarding
+    ? clients.filter((c) => c.admin_status !== "active")
+    : clients.filter((c) => c.admin_status === "active");
 
   useEffect(() => {
     fetchClients();
@@ -274,9 +274,9 @@ function Clients() {
 
   function getStatusBadge(status) {
     const styles = {
-      pending: "bg-yellow-100 text-yellow-800",
-      onboarding: "bg-blue-100 text-blue-800",
-      completed: "bg-green-100 text-green-800",
+      pending: "bg-yellow-100 text-yellow-800 dark:bg-yellow-950 dark:text-yellow-400",
+      onboarding: "bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-400",
+      completed: "bg-green-100 text-green-800 dark:bg-green-950 dark:text-green-400",
     };
     return (
       <span
@@ -287,22 +287,44 @@ function Clients() {
     );
   }
 
+  function getBillingBadge(status) {
+    const styles = {
+      pending_activation: "bg-[var(--color-bg-section)] text-[var(--color-text-secondary)]",
+      active: "bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-400",
+      past_due: "bg-yellow-100 text-yellow-700 dark:bg-yellow-950 dark:text-yellow-400",
+      suspended: "bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-400",
+      cancelled: "bg-[var(--color-bg-section)] text-[var(--color-text-muted)]",
+    };
+    const labels = {
+      pending_activation: "Pendiente",
+      active: "Activo",
+      past_due: "Vencido",
+      suspended: "Suspendido",
+      cancelled: "Cancelado",
+    };
+    return (
+      <span className={`px-2 py-1 rounded-full text-xs font-medium ${styles[status] || styles.pending_activation}`}>
+        {labels[status] || status}
+      </span>
+    );
+  }
+
   function getCompletionBar(completion) {
     const color =
       completion >= 100
         ? "bg-green-500"
         : completion >= 50
-          ? "bg-blue-500"
+          ? "bg-[var(--color-primary)]"
           : "bg-yellow-500";
     return (
       <div className="flex items-center gap-2">
-        <div className="w-24 h-2 bg-slate-200 rounded-full overflow-hidden">
+        <div className="w-24 h-2 bg-[var(--color-bg-section)] rounded-full overflow-hidden">
           <div
             className={`h-full ${color} transition-all`}
             style={{ width: `${completion}%` }}
           />
         </div>
-        <span className="text-sm text-slate-600">{completion}%</span>
+        <span className="text-sm text-[var(--color-text-secondary)]">{completion}%</span>
       </div>
     );
   }
@@ -384,198 +406,216 @@ function Clients() {
     <div className="px-2 md:px-8 py-6 md:py-8 max-w-7xl mx-auto pb-28">
       <div className="flex items-center justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-slate-800">Clientes</h1>
-          <p className="text-slate-500 mt-1">Gestiona las invitaciones de tus clientes</p>
+          <h1 className="text-2xl font-bold text-[var(--color-text-primary)]">
+            {isOnboarding ? "Onboarding" : "Activos"}
+          </h1>
+          <p className="text-[var(--color-text-muted)] mt-1">
+            {isOnboarding
+              ? "Clientes pendientes de activación"
+              : "Clientes activos con admin creado"}
+          </p>
         </div>
-        <button
-          onClick={openCreateModal}
-          className="flex items-center gap-2 px-3 py-3 md:px-4 md:py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-        >
-          <Plus className="w-6 h-6 md:w-5 md:h-5" />
-          <span className="hidden md:inline">Nueva Invitación</span>
-        </button>
-      </div>
-
-      {/* Tabs */}
-      <div className="flex gap-1 mb-6">
-        {[
-          { key: 'todos', label: 'Todos' },
-          { key: 'onboarding', label: 'Onboarding' },
-          { key: 'activos', label: 'Activos' },
-        ].map(({ key, label }) => (
+        {isOnboarding && (
           <button
-            key={key}
-            onClick={() => setTab(key)}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              tab === key
-                ? 'bg-indigo-100 text-indigo-700'
-                : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100'
-            }`}
+            onClick={openCreateModal}
+            className="flex items-center gap-2 px-3 py-3 md:px-4 md:py-2 bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary-hover)] transition-colors"
           >
-            {label}
+            <Plus className="w-6 h-6 md:w-5 md:h-5" />
+            <span className="hidden md:inline">Nueva Invitación</span>
           </button>
-        ))}
+        )}
       </div>
 
       {error && (
-        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center gap-3">
+        <div className="mb-6 p-4 bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-500/20 rounded-lg flex items-center gap-3">
           <AlertCircle size={20} className="text-red-500 shrink-0" />
-          <p className="text-sm text-red-700">{error}</p>
+          <p className="text-sm text-red-700 dark:text-red-400">{error}</p>
         </div>
       )}
 
       {loading ? (
-        <div className="text-center py-12 text-slate-500">Cargando...</div>
+        <div className="text-center py-12 text-[var(--color-text-muted)]">Cargando...</div>
       ) : !Array.isArray(filteredClients) || filteredClients.length === 0 ? (
         <div className="text-center py-12">
-          <Users className="mx-auto mb-4 text-slate-300" size={48} />
-          <p className="text-slate-500">No hay clientes todavía</p>
-          <p className="text-sm text-slate-400 mt-1">
+          <Users className="mx-auto mb-4 text-[var(--color-text-muted)]" size={48} />
+          <p className="text-[var(--color-text-secondary)]">No hay clientes todavía</p>
+          <p className="text-sm text-[var(--color-text-muted)] mt-1">
             Creá tu primera invitación
           </p>
         </div>
       ) : (
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+        <div className="bg-[var(--color-bg-card)] rounded-xl shadow-sm border border-[var(--color-border)] overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full min-w-[800px]">
-              <thead className="bg-slate-50 border-b border-slate-200">
+              <thead className="bg-[var(--color-bg-section)] border-b border-[var(--color-border)]">
                 <tr>
-                  <th className="text-left px-6 py-4 text-sm font-semibold text-slate-600">
+                  <th className="text-left px-6 py-4 text-sm font-semibold text-[var(--color-text-secondary)]">
                     Cliente
                   </th>
-                  <th className="text-left px-6 py-4 text-sm font-semibold text-slate-600">
-                    Estado
-                  </th>
-                  <th className="text-left px-6 py-4 text-sm font-semibold text-slate-600">
+                  {isOnboarding && (
+                    <th className="text-left px-6 py-4 text-sm font-semibold text-[var(--color-text-secondary)]">
+                      Estado
+                    </th>
+                  )}
+                  <th className="text-left px-6 py-4 text-sm font-semibold text-[var(--color-text-secondary)]">
                     Servicio
                   </th>
-                  <th className="text-left px-6 py-4 text-sm font-semibold text-slate-600">
-                    Progreso
-                  </th>
-                  <th className="text-left px-6 py-4 text-sm font-semibold text-slate-600">
-                    Admin
-                  </th>
-                  <th className="text-left px-6 py-4 text-sm font-semibold text-slate-600">
-                    Link Onboarding
-                  </th>
-                  <th className="text-left px-6 py-4 text-sm font-semibold text-slate-600">
+                  {isOnboarding && (
+                    <th className="text-left px-6 py-4 text-sm font-semibold text-[var(--color-text-secondary)]">
+                      Progreso
+                    </th>
+                  )}
+                  {isOnboarding && (
+                    <th className="text-left px-6 py-4 text-sm font-semibold text-[var(--color-text-secondary)]">
+                      Admin
+                    </th>
+                  )}
+                  {isActivos && (
+                    <th className="text-left px-6 py-4 text-sm font-semibold text-[var(--color-text-secondary)]">
+                      Billing
+                    </th>
+                  )}
+                  {isOnboarding && (
+                    <th className="text-left px-6 py-4 text-sm font-semibold text-[var(--color-text-secondary)]">
+                      Link Onboarding
+                    </th>
+                  )}
+                  <th className="text-left px-6 py-4 text-sm font-semibold text-[var(--color-text-secondary)]">
                     Creado
                   </th>
-                  <th className="text-left px-6 py-4 text-sm font-semibold text-slate-600">
-                    Acciones
-                  </th>
+                  {isOnboarding && (
+                    <th className="text-left px-6 py-4 text-sm font-semibold text-[var(--color-text-secondary)]">
+                      Acciones
+                    </th>
+                  )}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-[var(--color-border)]">
                 {filteredClients.map((client) => (
-                  <tr key={client.id} className="hover:bg-slate-50">
+                  <tr
+                    key={client.id}
+                    className={`hover:bg-[var(--color-bg-elevated)] ${isActivos ? "cursor-pointer" : ""}`}
+                    onClick={isActivos ? () => navigate(`/clientes/activos/${client.id}`) : undefined}
+                  >
                     <td className="px-6 py-4">
-                      <div className="font-medium text-slate-800">
+                      <div className="font-medium text-[var(--color-text-primary)]">
                         {client.business_name || "Sin nombre"}
                       </div>
-                      <div className="text-sm text-slate-500">
+                      <div className="text-sm text-[var(--color-text-muted)]">
                         {client.email || "Sin email"}
                       </div>
                       {client.cloudinary_folder_prefix && (
-                        <div className="text-xs text-slate-400 font-mono mt-0.5">
-                          📁 {client.cloudinary_folder_prefix}
+                        <div className="text-xs text-[var(--color-text-muted)] font-mono mt-0.5">
+                          {client.cloudinary_folder_prefix}
                         </div>
                       )}
                     </td>
-                    <td className="px-6 py-4">
-                      {getStatusBadge(client.status)}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-slate-600">
+                    {isOnboarding && (
+                      <td className="px-6 py-4">
+                        {getStatusBadge(client.onboarding_status)}
+                      </td>
+                    )}
+                    <td className="px-6 py-4 text-sm text-[var(--color-text-secondary)]">
                       {SERVICE_TYPE_LABELS[client.service_type] || "—"}
                     </td>
-                    <td className="px-6 py-4">
-                      {getCompletionBar(client.completion || 0)}
-                    </td>
-                    <td className="px-6 py-4">
-                      {client.admin_status === "active" ? (
-                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700 whitespace-nowrap">
-                          ✓ Activo
-                        </span>
-                      ) : client.admin_status === "error" ? (
-                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700 whitespace-nowrap">
-                          ✗ Error
-                        </span>
-                      ) : client.api_url ? (
-                        <button
-                          onClick={() => handleCreateAdmin(client)}
-                          className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium bg-indigo-100 text-indigo-700 hover:bg-indigo-200 transition-colors whitespace-nowrap"
-                        >
-                          <UserPlus size={12} />
-                          Crear admin
-                        </button>
-                      ) : (
-                        <span className="text-xs text-slate-400">—</span>
-                      )}
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-1 min-w-[160px]">
-                        <a
-                          href={buildInviteLink(client.invite_token)}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="p-1 text-slate-400 hover:text-slate-600 shrink-0"
-                          title="Abrir enlace"
-                        >
-                          <ExternalLink size={14} />
-                        </a>
-                        <button
-                          onClick={() => copyLink(client.invite_token)}
-                          className="p-1 text-slate-400 hover:text-slate-600 shrink-0"
-                          title="Copiar link"
-                        >
-                          {copied === client.invite_token ? (
-                            <span className="text-green-600 text-xs font-medium">
-                              OK
-                            </span>
-                          ) : (
-                            <Copy size={14} />
-                          )}
-                        </button>
-                        <code className="text-xs text-slate-500 truncate max-w-[120px] block">
-                          {buildInviteLink(client.invite_token)}
-                        </code>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-1 text-sm text-slate-500">
-                        <Clock size={14} />
-                        {new Date(client.created_at).toLocaleDateString(
-                          "es-AR",
-                        )}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-1">
-                        <button
-                          onClick={() => openEditModal(client)}
-                          className="p-2 text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors"
-                          title="Editar"
-                        >
-                          <Pencil size={18} />
-                        </button>
-                        {client.api_url && (
+                    {isOnboarding && (
+                      <td className="px-6 py-4">
+                        {getCompletionBar(client.completion || 0)}
+                      </td>
+                    )}
+                    {isOnboarding && (
+                      <td className="px-6 py-4">
+                        {client.admin_status === "active" ? (
+                          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-400 whitespace-nowrap">
+                            ✓ Activo
+                          </span>
+                        ) : client.admin_status === "error" ? (
+                          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-400 whitespace-nowrap">
+                            ✗ Error
+                          </span>
+                        ) : client.api_url ? (
                           <button
-                            onClick={() => openSyncModal(client)}
-                            className="p-2 text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
-                            title="Sincronizar"
+                            onClick={(e) => { e.stopPropagation(); handleCreateAdmin(client); }}
+                            className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium bg-indigo-50 dark:bg-indigo-950 text-[var(--color-primary)] hover:bg-indigo-100 dark:hover:bg-indigo-900 transition-colors whitespace-nowrap"
                           >
-                        <RefreshCw size={18} />
-                        </button>
-                      )}
-                      <button
-                          onClick={() => handleDelete(client)}
-                          className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                          title="Eliminar"
-                        >
-                          <Trash2 size={18} />
-                        </button>
+                            <UserPlus size={12} />
+                            Crear admin
+                          </button>
+                        ) : (
+                          <span className="text-xs text-[var(--color-text-muted)]">—</span>
+                        )}
+                      </td>
+                    )}
+                    {isActivos && (
+                      <td className="px-6 py-4">
+                        {getBillingBadge(client.billing_status)}
+                      </td>
+                    )}
+                    {isOnboarding && (
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-1 min-w-[160px]">
+                          <a
+                            href={buildInviteLink(client.invite_token)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="p-1 text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] shrink-0"
+                            title="Abrir enlace"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <ExternalLink size={14} />
+                          </a>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); copyLink(client.invite_token); }}
+                            className="p-1 text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] shrink-0"
+                            title="Copiar link"
+                          >
+                            {copied === client.invite_token ? (
+                              <span className="text-green-600 dark:text-green-400 text-xs font-medium">OK</span>
+                            ) : (
+                              <Copy size={14} />
+                            )}
+                          </button>
+                          <code className="text-xs text-[var(--color-text-muted)] truncate max-w-[120px] block">
+                            {buildInviteLink(client.invite_token)}
+                          </code>
+                        </div>
+                      </td>
+                    )}
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-1 text-sm text-[var(--color-text-muted)]">
+                        <Clock size={14} />
+                        {new Date(client.created_at).toLocaleDateString("es-AR")}
                       </div>
                     </td>
+                    {isOnboarding && (
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={(e) => { e.stopPropagation(); openEditModal(client); }}
+                            className="p-2 text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-elevated)] rounded-lg transition-colors"
+                            title="Editar"
+                          >
+                            <Pencil size={18} />
+                          </button>
+                          {client.api_url && (
+                            <button
+                              onClick={(e) => { e.stopPropagation(); openSyncModal(client); }}
+                              className="p-2 text-[var(--color-text-secondary)] hover:text-[var(--color-primary)] hover:bg-indigo-50 dark:bg-indigo-950 rounded-lg transition-colors"
+                              title="Sincronizar"
+                            >
+                              <RefreshCw size={18} />
+                            </button>
+                          )}
+                          <button
+                            onClick={(e) => { e.stopPropagation(); handleDelete(client); }}
+                            className="p-2 text-[var(--color-text-muted)] hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950 rounded-lg transition-colors"
+                            title="Eliminar"
+                          >
+                            <Trash2 size={18} />
+                          </button>
+                        </div>
+                      </td>
+                    )}
                   </tr>
                 ))}
               </tbody>
@@ -586,26 +626,26 @@ function Clients() {
 
       {showCreateModal && (
         <Modal onClose={closeCreateModal}>
-          <h2 className="text-lg font-semibold text-slate-800 mb-4">
+          <h2 className="text-lg font-semibold text-[var(--color-text-primary)] mb-4">
             Crear Nueva Invitación
           </h2>
           {lastCreated ? (
             <div>
-              <div className="p-4 bg-green-50 border border-green-200 rounded-lg mb-4">
-                <p className="text-sm text-green-800 font-medium mb-2">
+              <div className="p-4 bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-500/20 rounded-lg mb-4">
+                <p className="text-sm text-green-800 dark:text-green-400 font-medium mb-2">
                   ¡Invitación creada!
                 </p>
                 <div className="flex items-center gap-2">
-                  <code className="flex-1 bg-white px-3 py-2 rounded border text-sm break-all">
+                  <code className="flex-1 bg-[var(--color-bg-card)] px-3 py-2 rounded border border-[var(--color-border)] text-sm text-[var(--color-text-primary)] break-all">
                     {buildInviteLink(lastCreated.invite_token)}
                   </code>
                   <button
                     onClick={() => copyLink(lastCreated.invite_token)}
-                    className="p-2 text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors shrink-0"
+                    className="p-2 text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-elevated)] rounded-lg transition-colors shrink-0"
                     title="Copiar link"
                   >
                     {copied === lastCreated.invite_token ? (
-                      <span className="text-green-600 text-xs font-medium">
+                      <span className="text-green-600 dark:text-green-400 text-xs font-medium">
                         OK
                       </span>
                     ) : (
@@ -616,7 +656,7 @@ function Clients() {
               </div>
               <button
                 onClick={closeCreateModal}
-                className="w-full px-4 py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors"
+                className="w-full px-4 py-2 bg-[var(--color-bg-section)] text-[var(--color-text-secondary)] rounded-lg hover:bg-[var(--color-bg-elevated)] transition-colors"
               >
                 Cerrar
               </button>
@@ -631,7 +671,7 @@ function Clients() {
               extraFields={
                 <>
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1">
+                    <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">
                       Tipo de servicio
                     </label>
                     <select
@@ -642,7 +682,7 @@ function Clients() {
                           serviceType: e.target.value,
                         })
                       }
-                      className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-bg-card)] text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
                     >
                       <option value="">Seleccionar...</option>
                       {Object.entries(SERVICE_TYPE_LABELS).map(
@@ -655,7 +695,7 @@ function Clients() {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1">
+                    <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">
                       URL de la API
                     </label>
                     <div className="flex items-center gap-2">
@@ -664,8 +704,8 @@ function Clients() {
                         onClick={() => setUseHttps(!useHttps)}
                         className={`px-3 py-2 rounded-lg border text-sm font-mono transition-colors ${
                           useHttps
-                            ? 'bg-emerald-50 border-emerald-300 text-emerald-700'
-                            : 'bg-slate-100 border-slate-300 text-slate-500'
+                            ? 'bg-green-50 dark:bg-green-950 border-green-300 dark:border-green-500/30 text-green-700 dark:text-green-400'
+                            : 'bg-[var(--color-bg-section)] border-[var(--color-border)] text-[var(--color-text-muted)]'
                         }`}
                       >
                         {useHttps ? 'https://' : 'http://'}
@@ -675,7 +715,7 @@ function Clients() {
                         value={formData.apiUrl}
                         onChange={(e) => setFormData({ ...formData, apiUrl: e.target.value })}
                         placeholder="api.acuamare.com"
-                        className="flex-1 px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="flex-1 px-4 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-bg-card)] text-[var(--color-text-primary)] font-mono focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
                       />
                     </div>
                   </div>
@@ -688,13 +728,13 @@ function Clients() {
 
       {editingClient && (
         <Modal onClose={closeEditModal}>
-          <h2 className="text-lg font-semibold text-slate-800 mb-4">
+          <h2 className="text-lg font-semibold text-[var(--color-text-primary)] mb-4">
             Editar Cliente
           </h2>
           {error && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2">
+            <div className="mb-4 p-3 bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-500/20 rounded-lg flex items-center gap-2">
               <AlertCircle size={16} className="text-red-500 shrink-0" />
-              <p className="text-sm text-red-700">{error}</p>
+              <p className="text-sm text-red-700 dark:text-red-400">{error}</p>
             </div>
           )}
           <ClientForm
@@ -706,7 +746,7 @@ function Clients() {
             extraFields={
               <>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">
+                  <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">
                     Tipo de servicio
                   </label>
                   <select
@@ -714,7 +754,7 @@ function Clients() {
                     onChange={(e) =>
                       setEditData({ ...editData, serviceType: e.target.value })
                     }
-                    className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-bg-card)] text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
                   >
                     <option value="">Seleccionar...</option>
                     {Object.entries(SERVICE_TYPE_LABELS).map(
@@ -727,7 +767,7 @@ function Clients() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">
+                  <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">
                     URL de la API
                   </label>
                   <div className="flex items-center gap-2">
@@ -736,8 +776,8 @@ function Clients() {
                       onClick={() => setEditUseHttps(!editUseHttps)}
                       className={`px-3 py-2 rounded-lg border text-sm font-mono transition-colors ${
                         editUseHttps
-                          ? 'bg-emerald-50 border-emerald-300 text-emerald-700'
-                          : 'bg-slate-100 border-slate-300 text-slate-500'
+                          ? 'bg-green-50 dark:bg-green-950 border-green-300 dark:border-green-500/30 text-green-700 dark:text-green-400'
+                          : 'bg-[var(--color-bg-section)] border-[var(--color-border)] text-[var(--color-text-muted)]'
                       }`}
                     >
                       {editUseHttps ? 'https://' : 'http://'}
@@ -747,7 +787,7 @@ function Clients() {
                       value={editData.apiUrl}
                       onChange={(e) => setEditData({ ...editData, apiUrl: e.target.value })}
                       placeholder="api.acuamare.com"
-                      className="flex-1 px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="flex-1 px-4 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-bg-card)] text-[var(--color-text-primary)] font-mono focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
                     />
                   </div>
                 </div>
@@ -759,10 +799,10 @@ function Clients() {
 
       {syncOpen && (
         <Modal onClose={() => setSyncOpen(false)}>
-          <h2 className="text-lg font-semibold text-slate-800 mb-2">
+          <h2 className="text-lg font-semibold text-[var(--color-text-primary)] mb-2">
             Sincronizar: {syncClient?.business_name}
           </h2>
-          <p className="text-sm text-slate-500 mb-4">
+          <p className="text-sm text-[var(--color-text-muted)] mb-4">
             Seleccioná qué datos enviar al panel del cliente.
           </p>
 
@@ -804,7 +844,7 @@ function Clients() {
             ].map(({ key, label, info }) => (
               <label
                 key={key}
-                className="flex items-center gap-3 p-3 rounded-lg border border-slate-200 hover:bg-slate-50 cursor-pointer"
+                className="flex items-center gap-3 p-3 rounded-lg border border-[var(--color-border)] hover:bg-[var(--color-bg-elevated)] cursor-pointer"
               >
                 <input
                   type="checkbox"
@@ -815,13 +855,13 @@ function Clients() {
                       [key]: e.target.checked,
                     }))
                   }
-                  className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                  className="rounded border-[var(--color-border)] text-[var(--color-primary)] focus:ring-[var(--color-primary)]"
                 />
                 <div className="flex-1">
-                  <span className="text-sm font-medium text-slate-700">
+                  <span className="text-sm font-medium text-[var(--color-text-secondary)]">
                     {label}
                   </span>
-                  <span className="text-xs text-slate-400 ml-2">{info}</span>
+                  <span className="text-xs text-[var(--color-text-muted)] ml-2">{info}</span>
                 </div>
               </label>
             ))}
@@ -830,14 +870,14 @@ function Clients() {
           <div className="flex gap-3 justify-end">
             <button
               onClick={() => setSyncOpen(false)}
-              className="px-4 py-2 text-sm text-slate-600 hover:text-slate-800"
+              className="px-4 py-2 text-sm text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]"
             >
               Cancelar
             </button>
             <button
               onClick={handleSyncSubmit}
               disabled={syncing || !Object.values(syncSelection).some(Boolean)}
-              className="px-4 py-2 text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50"
+              className="px-4 py-2 text-sm bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary-hover)] disabled:opacity-50"
             >
               {syncing ? "Sincronizando..." : "Sincronizar"}
             </button>

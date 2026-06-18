@@ -17,3 +17,5 @@ export {
   CreateComponentSchema,
   UpdateComponentSchema,
 } from './moduleValidations.js';
+
+export { UpdateBillingSchema } from './billing.js';

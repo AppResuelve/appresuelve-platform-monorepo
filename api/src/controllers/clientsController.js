@@ -2,8 +2,8 @@ import * as clientService from '../services/clientService.js';
 
 export async function create(req, res) {
   try {
-    const { businessName, email, address, serviceType } = req.body;
-    const client = await clientService.createInvite({ businessName, email, address, serviceType });
+    const { businessName, email, address, serviceType, apiUrl, phone, description, domain, notes } = req.body;
+    const client = await clientService.createInvite({ businessName, email, address, serviceType, apiUrl, phone, description, domain, notes });
     res.status(201).json(client);
   } catch (error) {
     console.error('Error creating invitation:', error);
@@ -93,5 +93,17 @@ export async function sync(req, res) {
   } catch (error) {
     console.error('Error syncing:', error)
     res.status(500).json({ error: error.message || 'Failed to sync' })
+  }
+}
+
+export async function updateBilling(req, res) {
+  try {
+    const { id } = req.params;
+    const { billing_status, billing_day, grace_days } = req.body;
+    const result = await clientService.updateBillingStatus(id, billing_status, { billing_day, grace_days });
+    res.json(result);
+  } catch (error) {
+    console.error('Error updating billing:', error);
+    res.status(500).json({ error: error.message || 'Failed to update billing' });
   }
 }

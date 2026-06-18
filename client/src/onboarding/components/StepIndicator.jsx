@@ -19,7 +19,7 @@ function StepIndicator({ totalSteps, currentStep, completed }) {
                   ? 'bg-green-500 text-white'
                   : isCurrent
                   ? 'bg-blue-600 text-white'
-                  : 'bg-slate-200 text-slate-400'
+                  : 'bg-[var(--color-bg-section)] text-[var(--color-text-muted)]'
               }`}
             >
               {complete || isPast ? <Check size={12} /> : index + 1}
@@ -27,7 +27,7 @@ function StepIndicator({ totalSteps, currentStep, completed }) {
             {index < totalSteps - 1 && (
               <div
                 className={`w-6 h-0.5 transition-colors ${
-                  index < currentStep || complete ? 'bg-green-500' : 'bg-slate-200'
+                  index < currentStep || complete ? 'bg-green-500' : 'bg-[var(--color-bg-section)]'
                 }`}
               />
             )}

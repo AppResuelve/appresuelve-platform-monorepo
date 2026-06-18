@@ -1,84 +1,86 @@
 import React, { useState, useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Users, LogOut, X, Wrench, ChevronDown, ChevronRight, FileText, Puzzle } from 'lucide-react';
+import { LayoutDashboard, Users, X, Wrench, ChevronDown, ChevronRight, FileText, Puzzle, Clock } from 'lucide-react';
 
-export default function Sidebar({ open, onClose, onLogout }) {
+export default function Sidebar({ open, onClose }) {
   const location = useLocation()
-  const [expanded, setExpanded] = useState(false)
+  const [clientesExpanded, setClientesExpanded] = useState(false)
+  const [cambiosExpanded, setCambiosExpanded] = useState(false)
 
   useEffect(() => {
+    if (location.pathname.startsWith('/clientes')) {
+      setClientesExpanded(true)
+    }
     if (location.pathname.startsWith('/cambios')) {
-      setExpanded(true)
+      setCambiosExpanded(true)
     }
   }, [location.pathname])
 
-  const items = [
-    { to: '/', icon: LayoutDashboard, label: 'Dashboard', end: true },
-    { to: '/clientes', icon: Users, label: 'Clientes', end: false },
+  const clientItems = [
+    { to: '/clientes/onboarding', icon: Clock, label: 'Onboarding' },
+    { to: '/clientes/activos', icon: Users, label: 'Activos' },
   ]
 
-  const subItems = [
+  const cambioItems = [
     { to: '/cambios/solicitudes', icon: FileText, label: 'Solicitudes' },
     { to: '/cambios/constructor', icon: Puzzle, label: 'Constructor' },
   ]
 
-  const isParentActive = location.pathname.startsWith('/cambios')
+  const isClientesActive = location.pathname.startsWith('/clientes')
+  const isCambiosActive = location.pathname.startsWith('/cambios')
 
   const content = (
     <>
-      <div className="flex items-center justify-between px-5 h-16 border-b border-slate-200 shrink-0">
+      {/* Header */}
+      <div className="flex items-center justify-between px-5 h-16 border-b border-[var(--color-border)] shrink-0">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold text-sm">
-            A
-          </div>
-          <span className="font-semibold text-slate-800 text-sm">AppResuelve</span>
+          <img src="https://res.cloudinary.com/dfun5vbsf/image/upload/v1779926864/logo_s-f_appresuleve_250px_ccbmqf.png" alt="AppResuelve" className="h-8 w-auto" />
+          <span className="font-semibold text-[var(--color-text-primary)] text-sm">AppResuelve <span className="text-[var(--color-text-muted)] font-normal">Admin</span></span>
         </div>
         <button
           onClick={onClose}
-          className="lg:hidden p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
+          className="lg:hidden p-1.5 rounded-lg text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-elevated)] transition-colors"
         >
           <X className="w-4 h-4" />
         </button>
       </div>
 
+      {/* Nav */}
       <nav className="flex-1 py-4 px-3 space-y-0.5 overflow-y-auto">
-        {items.map(({ to, icon: Icon, label, end }) => (
-          <NavLink
-            key={to}
-            to={to}
-            end={end}
-            onClick={onClose}
-            className={({ isActive }) =>
-              `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                isActive
-                  ? 'bg-indigo-50 text-indigo-700'
-                  : 'text-slate-600 hover:text-slate-800 hover:bg-slate-100'
-              }`
-            }
-          >
-            <Icon className="w-4 h-4" />
-            {label}
-          </NavLink>
-        ))}
+        <NavLink
+          to="/"
+          end
+          onClick={onClose}
+          className={({ isActive }) =>
+            `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+              isActive
+                ? 'bg-indigo-50 dark:bg-indigo-950 text-[var(--color-primary)]'
+                : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-elevated)]'
+            }`
+          }
+        >
+          <LayoutDashboard className="w-4 h-4" />
+          Dashboard
+        </NavLink>
 
-        {/* Collapsible "Cambios de clientes" */}
+        {/* Clientes collapsible */}
         <div>
           <button
-            onClick={() => setExpanded(!expanded)}
+            onClick={() => setClientesExpanded(!clientesExpanded)}
             className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors w-full ${
-              isParentActive
-                ? 'text-indigo-700'
-                : 'text-slate-600 hover:text-slate-800 hover:bg-slate-100'
+              isClientesActive
+                ? 'text-[var(--color-primary)]'
+                : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-elevated)]'
             }`}
           >
-            <Wrench className="w-4 h-4" />
-            <span className="flex-1 text-left">Cambios de clientes</span>
-            {expanded ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+            <Users className="w-4 h-4" />
+            <span className="flex-1 text-left">Clientes</span>
+            {clientesExpanded ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
           </button>
 
-          {expanded && (
-            <div className="ml-4 mt-0.5 space-y-0.5 border-l-2 border-slate-200 pl-2">
-              {subItems.map(({ to, icon: Icon, label }) => (
+          {clientesExpanded && (
+            <div className="ml-4 mt-0.5 space-y-0.5 border-l-2 border-[var(--color-border)] pl-2">
+              {clientItems.map(({ to, icon: Icon, label }) => (
                 <NavLink
                   key={to}
                   to={to}
@@ -87,8 +89,47 @@ export default function Sidebar({ open, onClose, onLogout }) {
                   className={({ isActive }) =>
                     `flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                       isActive
-                        ? 'bg-indigo-50 text-indigo-700'
-                        : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100'
+                        ? 'bg-indigo-50 dark:bg-indigo-950 text-[var(--color-primary)]'
+                        : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-elevated)]'
+                    }`
+                  }
+                >
+                  <Icon className="w-3.5 h-3.5" />
+                  {label}
+                </NavLink>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Cambios de clientes collapsible */}
+        <div>
+          <button
+            onClick={() => setCambiosExpanded(!cambiosExpanded)}
+            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors w-full ${
+              isCambiosActive
+                ? 'text-[var(--color-primary)]'
+                : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-elevated)]'
+            }`}
+          >
+            <Wrench className="w-4 h-4" />
+            <span className="flex-1 text-left">Cambios de clientes</span>
+            {cambiosExpanded ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
+          </button>
+
+          {cambiosExpanded && (
+            <div className="ml-4 mt-0.5 space-y-0.5 border-l-2 border-[var(--color-border)] pl-2">
+              {cambioItems.map(({ to, icon: Icon, label }) => (
+                <NavLink
+                  key={to}
+                  to={to}
+                  end
+                  onClick={onClose}
+                  className={({ isActive }) =>
+                    `flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      isActive
+                        ? 'bg-indigo-50 dark:bg-indigo-950 text-[var(--color-primary)]'
+                        : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-elevated)]'
                     }`
                   }
                 >
@@ -101,14 +142,9 @@ export default function Sidebar({ open, onClose, onLogout }) {
         </div>
       </nav>
 
-      <div className="border-t border-slate-200 p-4 shrink-0">
-        <button
-          onClick={onLogout}
-          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600 hover:text-red-600 hover:bg-red-50 transition-colors w-full"
-        >
-          <LogOut className="w-4 h-4" />
-          Cerrar sesión
-        </button>
+      {/* Footer */}
+      <div className="border-t border-[var(--color-border)] px-4 py-3 shrink-0">
+        <p className="text-xs text-[var(--color-text-muted)] text-center">Panel Administración v1.0</p>
       </div>
     </>
   )
@@ -124,7 +160,7 @@ export default function Sidebar({ open, onClose, onLogout }) {
 
       <aside
         className={`
-          fixed left-0 top-0 h-full w-56 bg-white border-r border-slate-200 flex flex-col z-50
+          fixed left-0 top-0 h-full w-56 bg-[var(--color-bg-card)] border-r border-[var(--color-border)] flex flex-col z-50
           transition-transform duration-300
           lg:translate-x-0
           ${open ? 'translate-x-0' : '-translate-x-full'}

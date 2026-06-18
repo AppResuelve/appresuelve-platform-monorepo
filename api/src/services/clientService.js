@@ -1,6 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import db from '../models/index.js';
 import { deleteClientFiles } from './storage/index.js';
+import { ONBOARDING_STATUS, ADMIN_STATUS, BILLING_STATUS } from '../constants/client.js';
 
 const { Client, ClientForm, ClientDocument } = db;
 
@@ -10,6 +11,67 @@ function generateToken() {
 
 function generateCloudinaryPrefix() {
   return `cl_${uuidv4().replace(/-/g, '').slice(0, 8)}`;
+}
+
+function generateServiceSlug(serviceType) {
+  return serviceType.replace(/_/g, '-');
+}
+
+function computeBillingFields(client) {
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+  let daysRemaining = null;
+  let graceDaysRemaining = null;
+
+  if (client.currentPeriodEnd) {
+    const end = new Date(client.currentPeriodEnd);
+    daysRemaining = Math.max(0, Math.ceil((end - today) / (1000 * 60 * 60 * 24)));
+  }
+
+  if (client.billingStatus === BILLING_STATUS.PAST_DUE && client.graceUntil) {
+    const grace = new Date(client.graceUntil);
+    graceDaysRemaining = Math.max(0, Math.ceil((grace - today) / (1000 * 60 * 60 * 24)));
+  }
+
+  return { daysRemaining, graceDaysRemaining };
+}
+
+function formatClientResponse(client, extra = {}) {
+  const { daysRemaining, graceDaysRemaining } = computeBillingFields(client);
+
+  return {
+    id: client.id,
+    business_name: client.businessName,
+    email: client.email,
+    address: client.address,
+    service_type: client.serviceType,
+    phone: client.phone,
+    description: client.description,
+    domain: client.domain,
+    notes: client.notes,
+    invite_token: client.inviteToken,
+    onboarding_status: client.onboardingStatus,
+    api_url: client.apiUrl,
+    admin_status: client.adminStatus,
+    sync_status: client.syncStatus,
+    cloudinary_folder_prefix: client.cloudinaryFolderPrefix,
+    git_repo: client.gitRepo,
+    backend_repo: client.backendRepo,
+    frontend_repo: client.frontendRepo,
+    billing_status: client.billingStatus,
+    billing_day: client.billingDay,
+    current_period_start: client.currentPeriodStart,
+    current_period_end: client.currentPeriodEnd,
+    grace_days: client.graceDays,
+    grace_until: client.graceUntil,
+    suspended_at: client.suspendedAt,
+    cancelled_at: client.cancelledAt,
+    days_remaining: daysRemaining,
+    grace_days_remaining: graceDaysRemaining,
+    created_at: client.createdAt ? new Date(client.createdAt).toISOString() : null,
+    ...extra,
+  };
 }
 
 function calculateCompletion(formData, documents) {
@@ -31,8 +93,11 @@ function calculateCompletion(formData, documents) {
   return Math.round((filledSections / sections.length) * total);
 }
 
-export async function createInvite({ businessName, email, address, serviceType, apiUrl }) {
+export async function createInvite({ businessName, email, address, serviceType, apiUrl, phone, description, domain, notes }) {
   const inviteToken = generateToken();
+  const cloudinaryPrefix = generateCloudinaryPrefix();
+  const slug = serviceType ? generateServiceSlug(serviceType) : null;
+  const repoName = slug ? `${slug}-${cloudinaryPrefix}` : null;
 
   const client = await Client.create({
     businessName: businessName || null,
@@ -40,10 +105,17 @@ export async function createInvite({ businessName, email, address, serviceType, 
     address: address || null,
     serviceType: serviceType || null,
     apiUrl: apiUrl || null,
-    cloudinaryFolderPrefix: generateCloudinaryPrefix(),
+    phone: phone || null,
+    description: description || null,
+    domain: domain || null,
+    notes: notes || null,
+    cloudinaryFolderPrefix: cloudinaryPrefix,
+    gitRepo: repoName,
+    backendRepo: repoName,
+    frontendRepo: repoName,
     inviteToken,
-    status: 'pending',
-    adminStatus: 'pending',
+    onboardingStatus: ONBOARDING_STATUS.PENDING,
+    adminStatus: ADMIN_STATUS.PENDING,
     inviteSentAt: new Date(),
   });
 
@@ -51,20 +123,7 @@ export async function createInvite({ businessName, email, address, serviceType, 
     process.env.ONBOARDING_URL || 'http://localhost:5173';
   const inviteLink = `${onboardingUrl}/client/${client.inviteToken}`;
 
-  return {
-    id: client.id,
-    business_name: client.businessName,
-    email: client.email,
-    address: client.address,
-    service_type: client.serviceType,
-    invite_token: client.inviteToken,
-    status: client.status,
-    api_url: client.apiUrl,
-    admin_status: client.adminStatus,
-    cloudinary_folder_prefix: client.cloudinaryFolderPrefix,
-    created_at: client.createdAt ? new Date(client.createdAt).toISOString() : null,
-    invite_link: inviteLink,
-  };
+  return formatClientResponse(client, { invite_link: inviteLink });
 }
 
 export async function findAllWithCompletion() {
@@ -89,19 +148,7 @@ export async function findAllWithCompletion() {
     const docs = client.documents || [];
     const completion = calculateCompletion(formData, docs);
 
-    return {
-      id: client.id,
-      business_name: client.businessName,
-      email: client.email,
-      address: client.address,
-      service_type: client.serviceType,
-      invite_token: client.inviteToken,
-      status: client.status,
-      api_url: client.apiUrl,
-      admin_status: client.adminStatus,
-      sync_status: client.syncStatus,
-      cloudinary_folder_prefix: client.cloudinaryFolderPrefix,
-      created_at: client.createdAt ? new Date(client.createdAt).toISOString() : null,
+    return formatClientResponse(client, {
       form_data: formData,
       documents: docs.map((d) => ({
         id: d.id,
@@ -112,7 +159,7 @@ export async function findAllWithCompletion() {
         document_type: d.documentType,
       })),
       completion,
-    };
+    });
   });
 }
 
@@ -135,14 +182,7 @@ export async function findByToken(token) {
 
   if (!client) return null;
 
-  return {
-    id: client.id,
-    business_name: client.businessName,
-    email: client.email,
-    address: client.address,
-    service_type: client.serviceType,
-    status: client.status,
-    created_at: client.createdAt ? new Date(client.createdAt).toISOString() : null,
+  return formatClientResponse(client, {
     form_data: client.form ? client.form.data : null,
     documents: client.documents.map((d) => ({
       id: d.id,
@@ -151,7 +191,7 @@ export async function findByToken(token) {
       file_url: d.fileUrl,
       document_type: d.documentType,
     })),
-  };
+  });
 }
 
 export async function deleteClient(clientId) {
@@ -214,9 +254,11 @@ export async function updateClient(clientId, data) {
   if (data.email !== undefined) fields.email = data.email || null;
   if (data.address !== undefined) fields.address = data.address || null;
   if (data.serviceType !== undefined) fields.serviceType = data.serviceType || null;
-  if (data.apiUrl !== undefined) {
-    fields.apiUrl = data.apiUrl || null
-  }
+  if (data.apiUrl !== undefined) fields.apiUrl = data.apiUrl || null;
+  if (data.phone !== undefined) fields.phone = data.phone || null;
+  if (data.description !== undefined) fields.description = data.description || null;
+  if (data.domain !== undefined) fields.domain = data.domain || null;
+  if (data.notes !== undefined) fields.notes = data.notes || null;
 
   await client.update(fields);
 
@@ -224,18 +266,7 @@ export async function updateClient(clientId, data) {
   const docs = client.documents || [];
   const completion = calculateCompletion(formData, docs);
 
-  return {
-    id: client.id,
-    business_name: client.businessName,
-    email: client.email,
-    address: client.address,
-    service_type: client.serviceType,
-    invite_token: client.inviteToken,
-    status: client.status,
-    api_url: client.apiUrl,
-    admin_status: client.adminStatus,
-    sync_status: client.syncStatus,
-    created_at: client.createdAt ? new Date(client.createdAt).toISOString() : null,
+  return formatClientResponse(client, {
     form_data: formData,
     documents: docs.map((d) => ({
       id: d.id,
@@ -246,7 +277,7 @@ export async function updateClient(clientId, data) {
       document_type: d.documentType,
     })),
     completion,
-  };
+  });
 }
 
 export async function createAdminForClient(clientId) {
@@ -288,7 +319,7 @@ export async function createAdminForClient(clientId) {
     throw new Error(err.error || 'Error al crear admin')
   }
 
-  await client.update({ adminStatus: 'active' })
+  await client.update({ adminStatus: ADMIN_STATUS.ACTIVE })
   return client
 }
 
@@ -395,4 +426,49 @@ export async function syncSections(clientId, sections) {
 
   await client.update({ syncStatus })
   return { results, syncStatus }
+}
+
+export async function updateBillingStatus(clientId, billingStatus, extraData = {}) {
+  const client = await Client.findByPk(clientId);
+  if (!client) throw new Error('Cliente no encontrado');
+
+  const fields = { billingStatus };
+  const now = new Date();
+
+  if (billingStatus === BILLING_STATUS.ACTIVE) {
+    fields.currentPeriodStart = extraData.currentPeriodStart || now;
+    fields.currentPeriodEnd = extraData.currentPeriodEnd || new Date(now.getFullYear(), now.getMonth() + 1, now.getDate());
+    fields.graceUntil = null;
+    fields.suspendedAt = null;
+  }
+
+  if (billingStatus === BILLING_STATUS.SUSPENDED) {
+    fields.suspendedAt = now;
+    fields.graceUntil = null;
+  }
+
+  if (billingStatus === BILLING_STATUS.PAST_DUE) {
+    const graceDays = extraData.graceDays ?? client.graceDays ?? 7;
+    const graceUntil = new Date(client.currentPeriodEnd);
+    graceUntil.setDate(graceUntil.getDate() + graceDays);
+    fields.graceUntil = graceUntil;
+  }
+
+  if (billingStatus === BILLING_STATUS.CANCELLED) {
+    fields.cancelledAt = now;
+  }
+
+  if (billingStatus === BILLING_STATUS.PENDING_ACTIVATION) {
+    fields.currentPeriodStart = null;
+    fields.currentPeriodEnd = null;
+    fields.graceUntil = null;
+    fields.suspendedAt = null;
+    fields.cancelledAt = null;
+  }
+
+  if (extraData.billingDay !== undefined) fields.billingDay = extraData.billingDay;
+  if (extraData.graceDays !== undefined) fields.graceDays = extraData.graceDays;
+
+  await client.update(fields);
+  return formatClientResponse(client);
 }

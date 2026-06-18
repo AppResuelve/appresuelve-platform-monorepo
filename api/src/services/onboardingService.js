@@ -21,7 +21,7 @@ export async function getByToken(token) {
     id: client.id,
     business_name: client.businessName,
     email: client.email,
-    status: client.status,
+    onboarding_status: client.onboardingStatus,
     form_data: client.form ? client.form.data : null,
   };
 }
@@ -52,8 +52,8 @@ export async function saveOnboarding(token, data) {
       await form.update({ data }, { transaction: t });
     }
 
-    if (client.status === 'pending') {
-      await client.update({ status: 'onboarding' }, { transaction: t });
+    if (client.onboardingStatus === 'pending') {
+      await client.update({ onboardingStatus: 'onboarding' }, { transaction: t });
     }
 
     await t.commit();

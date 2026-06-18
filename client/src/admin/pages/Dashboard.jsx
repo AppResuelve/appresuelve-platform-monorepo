@@ -21,38 +21,38 @@ export default function Dashboard() {
   }, []);
 
   const cards = [
-    { icon: ClipboardList, label: 'En Onboarding', value: stats.onboarding, color: 'bg-amber-50 text-amber-600' },
-    { icon: Users, label: 'Clientes totales', value: stats.total, color: 'bg-blue-50 text-blue-600' },
-    { icon: UserCheck, label: 'Activos', value: stats.active, color: 'bg-emerald-50 text-emerald-600' },
+    { icon: ClipboardList, label: 'En Onboarding', value: stats.onboarding, color: 'bg-amber-50 text-amber-600 dark:bg-amber-950 dark:text-amber-400' },
+    { icon: Users, label: 'Clientes totales', value: stats.total, color: 'bg-blue-50 text-blue-600 dark:bg-blue-950 dark:text-blue-400' },
+    { icon: UserCheck, label: 'Activos', value: stats.active, color: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950 dark:text-emerald-400' },
   ];
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-slate-800 mb-6">Dashboard</h1>
+      <h1 className="text-2xl font-bold text-[var(--color-text-primary)] mb-6">Dashboard</h1>
 
       {loading ? (
-        <div className="text-center py-12 text-slate-500">Cargando...</div>
+        <div className="text-center py-12 text-[var(--color-text-muted)]">Cargando...</div>
       ) : (
         <>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
             {cards.map(({ icon: Icon, label, value, color }) => (
-              <div key={label} className="bg-white rounded-xl border border-slate-200 p-5">
+              <div key={label} className="bg-[var(--color-bg-card)] rounded-xl border border-[var(--color-border)] p-5">
                 <div className={`w-10 h-10 rounded-lg flex items-center justify-center mb-3 ${color}`}>
                   <Icon className="w-5 h-5" />
                 </div>
-                <p className="text-sm text-slate-500 mb-1">{label}</p>
-                <p className="text-2xl font-bold text-slate-800">{value}</p>
+                <p className="text-sm text-[var(--color-text-muted)] mb-1">{label}</p>
+                <p className="text-2xl font-bold text-[var(--color-text-primary)]">{value}</p>
               </div>
             ))}
           </div>
 
-          <div className="bg-white rounded-xl border border-slate-200 p-6">
+          <div className="bg-[var(--color-bg-card)] rounded-xl border border-[var(--color-border)] p-6">
             <div className="flex items-center gap-2 mb-4">
-              <TrendingUp className="w-5 h-5 text-slate-400" />
-              <h2 className="font-semibold text-slate-700">Actividad reciente</h2>
+              <TrendingUp className="w-5 h-5 text-[var(--color-text-muted)]" />
+              <h2 className="font-semibold text-[var(--color-text-secondary)]">Actividad reciente</h2>
             </div>
             <div className="space-y-3">
-              <p className="text-sm text-slate-500">En desarrollo — próximamente vas a ver tus estadísticas acá.</p>
+              <p className="text-sm text-[var(--color-text-muted)]">En desarrollo — próximamente vas a ver tus estadísticas acá.</p>
             </div>
           </div>
         </>

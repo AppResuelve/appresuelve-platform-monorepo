@@ -1,23 +1,22 @@
 import React from 'react';
-import { Loader2 } from 'lucide-react';
+import { Save, Check } from 'lucide-react';
 
 function SaveIndicator({ status }) {
   if (status === 'idle') return null;
 
-  const config = {
-    saving: { icon: Loader2, text: 'Guardando...', className: 'text-slate-500' },
-    saved: { icon: null, text: 'Guardado', className: 'text-green-600' },
-    error: { icon: null, text: 'Error al guardar', className: 'text-red-500' },
-  };
+  if (status === 'saving') {
+    return <Save size={14} className="text-[var(--color-text-muted)] animate-pulse" />;
+  }
 
-  const { icon: Icon, text, className } = config[status] || config.idle;
+  if (status === 'saved') {
+    return <Check size={14} className="text-green-600 dark:text-green-400" />;
+  }
 
-  return (
-    <div className={`flex items-center gap-1.5 text-sm ${className}`}>
-      {Icon && <Icon size={14} className="animate-spin" />}
-      <span>{text}</span>
-    </div>
-  );
+  if (status === 'error') {
+    return <Save size={14} className="text-red-500" />;
+  }
+
+  return null;
 }
 
 export default SaveIndicator;

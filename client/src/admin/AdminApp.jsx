@@ -4,12 +4,30 @@ import { AlertProvider } from './components/AlertContext';
 import Layout from './components/Layout';
 import Dashboard from './pages/Dashboard';
 import Clients from './pages/Clients';
+import ClientDetail from './pages/ClientDetail';
 import Login from './pages/Login';
 import Solicitudes from './pages/Solicitudes';
 import ModuleBuilder from './pages/ModuleBuilder';
 
+function initTheme() {
+  const saved = localStorage.getItem('theme');
+  const root = document.documentElement;
+  root.classList.remove('light', 'dark');
+
+  if (saved === 'light' || saved === 'dark') {
+    root.classList.add(saved);
+  } else {
+    const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    root.classList.add(isDark ? 'dark' : 'light');
+  }
+}
+
 function AdminApp() {
   const [token, setToken] = useState(localStorage.getItem('platform_token'));
+
+  useEffect(() => {
+    initTheme();
+  }, []);
 
   useEffect(() => {
     localStorage.setItem('platform_token', token || '');
@@ -30,7 +48,10 @@ function AdminApp() {
         <Routes>
           <Route element={<Layout token={token} onLogout={handleLogout} />}>
             <Route path="/" element={<Dashboard />} />
-            <Route path="/clientes" element={<Clients />} />
+            <Route path="/clientes" element={<Navigate to="/clientes/onboarding" replace />} />
+            <Route path="/clientes/onboarding" element={<Clients view="onboarding" />} />
+            <Route path="/clientes/activos" element={<Clients view="activos" />} />
+            <Route path="/clientes/activos/:id" element={<ClientDetail />} />
             <Route path="/cambios/solicitudes" element={<Solicitudes />} />
             <Route path="/cambios/constructor" element={<ModuleBuilder />} />
           </Route>

@@ -2,10 +2,12 @@ import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import morgan from 'morgan';
+import cron from 'node-cron';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import sequelize from './config/database.js';
 import routes from './routes/index.js';
+import { runBillingCron } from './services/billingCron.js';
 
 const app = express();
 
@@ -52,6 +54,12 @@ async function start() {
 
   app.listen(PORT, () => {
     console.log(`Onboarding API running on http://localhost:${PORT}`);
+
+    cron.schedule('0 0 * * *', () => {
+      console.log('[billing-cron] Running...');
+      runBillingCron().catch(console.error);
+    });
+    console.log('[billing-cron] Scheduled: daily at midnight');
   });
 }
 

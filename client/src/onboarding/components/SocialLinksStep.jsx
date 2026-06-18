@@ -20,8 +20,8 @@ function SocialLinksStep({ data, onChange }) {
     <div className="space-y-4">
       {SOCIAL_FIELDS.map(({ key, label, icon: Icon, placeholder }) => (
         <div key={key}>
-          <label className="block text-sm font-medium text-slate-700 mb-1 flex items-center gap-2">
-            <Icon size={16} className="text-slate-400" />
+          <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-1 flex items-center gap-2">
+            <Icon size={16} className="text-[var(--color-text-muted)]" />
             {label}
           </label>
           <input
@@ -29,12 +29,12 @@ function SocialLinksStep({ data, onChange }) {
             value={links[key] || ''}
             onChange={(e) => update(key, e.target.value)}
             placeholder={placeholder}
-            className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800"
+            className="w-full px-4 py-3 border border-[var(--color-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] bg-[var(--color-bg-card)]"
           />
         </div>
       ))}
 
-      <p className="text-sm text-slate-400 pt-2">
+      <p className="text-sm text-[var(--color-text-muted)] pt-2">
         Dejá vacíos los que no uses. Aparecerán solo los que completes.
       </p>
     </div>

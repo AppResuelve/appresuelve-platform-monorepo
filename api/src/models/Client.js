@@ -1,4 +1,5 @@
 import { Model } from 'sequelize';
+import { ONBOARDING_STATUS, ADMIN_STATUS, BILLING_STATUS, SERVICE_TYPES } from '../constants/client.js';
 
 export default (sequelize, DataTypes) => {
   class Client extends Model {
@@ -34,6 +35,7 @@ export default (sequelize, DataTypes) => {
       serviceType: {
         type: DataTypes.STRING(50),
         field: 'service_type',
+        validate: { isIn: [Object.values(SERVICE_TYPES)] },
       },
       inviteToken: {
         type: DataTypes.STRING(64),
@@ -41,9 +43,12 @@ export default (sequelize, DataTypes) => {
         allowNull: false,
         field: 'invite_token',
       },
-      status: {
+      onboardingStatus: {
         type: DataTypes.STRING(50),
-        defaultValue: 'pending',
+        allowNull: false,
+        defaultValue: ONBOARDING_STATUS.PENDING,
+        field: 'onboarding_status',
+        validate: { isIn: [Object.values(ONBOARDING_STATUS)] },
       },
       inviteSentAt: {
         type: DataTypes.DATE,
@@ -55,8 +60,10 @@ export default (sequelize, DataTypes) => {
       },
       adminStatus: {
         type: DataTypes.STRING(50),
-        defaultValue: 'pending',
+        allowNull: false,
+        defaultValue: ADMIN_STATUS.PENDING,
         field: 'admin_status',
+        validate: { isIn: [Object.values(ADMIN_STATUS)] },
       },
       syncStatus: {
         type: DataTypes.JSONB,
@@ -67,6 +74,70 @@ export default (sequelize, DataTypes) => {
         type: DataTypes.STRING(64),
         unique: true,
         field: 'cloudinary_folder_prefix',
+      },
+      gitRepo: {
+        type: DataTypes.STRING(255),
+        field: 'git_repo',
+      },
+      backendRepo: {
+        type: DataTypes.STRING(255),
+        field: 'backend_repo',
+      },
+      frontendRepo: {
+        type: DataTypes.STRING(255),
+        field: 'frontend_repo',
+      },
+      phone: {
+        type: DataTypes.STRING(50),
+      },
+      description: {
+        type: DataTypes.TEXT,
+      },
+      domain: {
+        type: DataTypes.STRING(255),
+      },
+      notes: {
+        type: DataTypes.TEXT,
+      },
+      billingStatus: {
+        type: DataTypes.STRING(50),
+        allowNull: false,
+        defaultValue: BILLING_STATUS.PENDING_ACTIVATION,
+        field: 'billing_status',
+        validate: { isIn: [Object.values(BILLING_STATUS)] },
+      },
+      billingDay: {
+        type: DataTypes.INTEGER,
+        field: 'billing_day',
+      },
+      currentPeriodStart: {
+        type: DataTypes.DATE,
+        field: 'current_period_start',
+      },
+      currentPeriodEnd: {
+        type: DataTypes.DATE,
+        field: 'current_period_end',
+      },
+      graceDays: {
+        type: DataTypes.INTEGER,
+        defaultValue: 7,
+        field: 'grace_days',
+      },
+      graceUntil: {
+        type: DataTypes.DATE,
+        field: 'grace_until',
+      },
+      suspendedAt: {
+        type: DataTypes.DATE,
+        field: 'suspended_at',
+      },
+      cancelledAt: {
+        type: DataTypes.DATE,
+        field: 'cancelled_at',
+      },
+      lastBillingCronAt: {
+        type: DataTypes.DATE,
+        field: 'last_billing_cron_at',
       },
     },
     {
