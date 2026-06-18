@@ -2,6 +2,7 @@ import { v4 as uuidv4 } from 'uuid';
 import db from '../models/index.js';
 import { deleteClientFiles } from './storage/index.js';
 import { ONBOARDING_STATUS, ADMIN_STATUS, BILLING_STATUS } from '../constants/client.js';
+import { activateBilling } from './billingService.js';
 
 const { Client, ClientForm, ClientDocument } = db;
 
@@ -320,6 +321,11 @@ export async function createAdminForClient(clientId) {
   }
 
   await client.update({ adminStatus: ADMIN_STATUS.ACTIVE })
+
+  if (client.billingStatus === BILLING_STATUS.PENDING_ACTIVATION) {
+    await activateBilling(client)
+  }
+
   return client
 }
 
