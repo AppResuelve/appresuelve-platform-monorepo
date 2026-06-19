@@ -8,7 +8,10 @@ import {
   XCircle,
   AlertCircle,
   X,
-  Settings,
+  CreditCard,
+  Pause,
+  Play,
+  Ban,
 } from "lucide-react";
 import { apiFetch } from "../../shared/api.js";
 import { SERVICE_TYPES } from "../../shared/constants.js";
@@ -101,13 +104,7 @@ export default function ClientDetail() {
   const [editUseHttps, setEditUseHttps] = useState(true);
   const [saving, setSaving] = useState(false);
 
-  const [billingModalOpen, setBillingModalOpen] = useState(false);
-  const [billingData, setBillingData] = useState({
-    billing_day: "",
-    grace_days: "",
-  });
   const [savingBilling, setSavingBilling] = useState(false);
-  const [billingEditing, setBillingEditing] = useState(false);
 
   useEffect(() => {
     fetchClient();
@@ -211,36 +208,30 @@ export default function ClientDetail() {
     return `${ONBOARDING_URL}/client/${inviteToken}`;
   }
 
-  function openBillingSettings() {
-    setBillingData({
-      billing_day: client.billing_day || "",
-      grace_days: client.grace_days || 7,
-    });
-    setBillingModalOpen(true);
-  }
-
-  async function handleBillingChange(e) {
-    const newStatus = e.target.value;
-    setBillingEditing(false);
-
-    if (newStatus === client.billing_status) return;
+  async function handleBillingAction(action) {
+    const labels = {
+      active: "Activar",
+      suspended: "Suspender",
+      cancelled: "Cancelar",
+    };
 
     const result = await Alert.fire({
-      title: "¿Cambiar estado?",
-      message: `El estado cambiará a "${BILLING_LABELS[newStatus]}"`,
+      title: `¿${labels[action] || action}?`,
+      message: `El estado de facturación cambiará a "${BILLING_LABELS[action]}"`,
       type: "warning",
       variant: "modal",
       showCancelButton: true,
-      confirmButtonText: "Cambiar",
+      confirmButtonText: labels[action] || "Confirmar",
       cancelButtonText: "Cancelar",
     });
 
     if (!result.isConfirmed) return;
 
+    setSavingBilling(true);
     try {
       const updated = await apiFetch(`/clients/${client.id}/billing`, {
         method: "PUT",
-        body: JSON.stringify({ billing_status: newStatus }),
+        body: JSON.stringify({ billing_status: action }),
       });
       setClient((prev) => ({ ...prev, ...updated }));
       Alert.fire({ message: "Estado actualizado", type: "success" });
@@ -249,33 +240,34 @@ export default function ClientDetail() {
         message: err.message || "Error al actualizar",
         type: "error",
       });
+    } finally {
+      setSavingBilling(false);
     }
   }
 
-  async function handleBillingSettingsSubmit(e) {
-    e.preventDefault();
+  async function handleRegisterPayment() {
+    const result = await Alert.fire({
+      title: "¿Registrar pago?",
+      message: "Se iniciará un nuevo ciclo de facturación",
+      type: "warning",
+      variant: "modal",
+      showCancelButton: true,
+      confirmButtonText: "Registrar",
+      cancelButtonText: "Cancelar",
+    });
+
+    if (!result.isConfirmed) return;
+
     setSavingBilling(true);
     try {
-      const payload = {
-        billing_status: client.billing_status,
-        billing_day: billingData.billing_day
-          ? Number(billingData.billing_day)
-          : null,
-        grace_days: billingData.grace_days ? Number(billingData.grace_days) : 7,
-      };
-      const updated = await apiFetch(`/clients/${client.id}/billing`, {
-        method: "PUT",
-        body: JSON.stringify(payload),
+      const updated = await apiFetch(`/clients/${client.id}/register-payment`, {
+        method: "POST",
       });
       setClient((prev) => ({ ...prev, ...updated }));
-      setBillingModalOpen(false);
-      Alert.fire({
-        message: "Ajustes de facturación actualizados",
-        type: "success",
-      });
+      Alert.fire({ message: "Pago registrado, nuevo ciclo iniciado", type: "success" });
     } catch (err) {
       Alert.fire({
-        message: err.message || "Error al actualizar",
+        message: err.message || "Error al registrar pago",
         type: "error",
       });
     } finally {
@@ -579,52 +571,15 @@ export default function ClientDetail() {
 
         {/* Right column — sticky */}
         <div className="md:sticky md:top-6">
-          <DetailSection
-            title="Facturación"
-            headerAction={
-              <button
-                onClick={openBillingSettings}
-                className="p-1.5 text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-elevated)] rounded-lg transition-colors"
-                title="Ajustes de facturación"
-              >
-                <Settings size={16} />
-              </button>
-            }
-          >
+          <DetailSection title="Facturación">
             <div className="md:col-span-2">
               <dt className="text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider">
                 Estado
               </dt>
-              <dd className="mt-1 flex items-center gap-2">
-                <select
-                  value={client.billing_status}
-                  onChange={handleBillingChange}
-                  disabled={!billingEditing}
-                  className={`text-sm rounded-lg border px-3 py-1.5 transition-colors ${
-                    billingEditing
-                      ? "border-[var(--color-border)] bg-[var(--color-bg-card)] text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
-                      : "border-transparent bg-[var(--color-bg-section)] text-[var(--color-text-secondary)] cursor-default"
-                  }`}
-                >
-                  {Object.entries(BILLING_LABELS).map(([value, label]) => (
-                    <option key={value} value={value}>
-                      {label}
-                    </option>
-                  ))}
-                </select>
-                <button
-                  onClick={() => setBillingEditing(!billingEditing)}
-                  className="p-1.5 text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-bg-elevated)] rounded-lg transition-colors shrink-0"
-                  title={billingEditing ? "Cancelar" : "Editar estado"}
-                >
-                  <Pencil size={14} />
-                </button>
+              <dd className="mt-1">
+                {getBillingBadge(client.billing_status)}
               </dd>
             </div>
-            <DetailField
-              label="Día de facturación"
-              value={client.billing_day ? `Día ${client.billing_day}` : null}
-            />
             <DetailField
               label="Período actual"
               value={
@@ -677,90 +632,69 @@ export default function ClientDetail() {
                 )}
               />
             )}
+
+            {/* Billing Actions */}
+            <div className="md:col-span-2 pt-4 border-t border-[var(--color-border)]">
+              <div className="flex flex-wrap gap-2">
+                {client.billing_status === "pending_activation" && (
+                  <button
+                    onClick={() => handleBillingAction("active")}
+                    disabled={savingBilling}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg bg-green-100 text-green-700 hover:bg-green-200 dark:bg-green-950 dark:text-green-400 dark:hover:bg-green-900 disabled:opacity-50"
+                  >
+                    <Play size={14} />
+                    Activar Facturación
+                  </button>
+                )}
+
+                {["active", "past_due", "suspended"].includes(client.billing_status) && (
+                  <button
+                    onClick={handleRegisterPayment}
+                    disabled={savingBilling}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg bg-blue-100 text-blue-700 hover:bg-blue-200 dark:bg-blue-950 dark:text-blue-400 dark:hover:bg-blue-900 disabled:opacity-50"
+                  >
+                    <CreditCard size={14} />
+                    Registrar Pago
+                  </button>
+                )}
+
+                {["active", "past_due"].includes(client.billing_status) && (
+                  <button
+                    onClick={() => handleBillingAction("suspended")}
+                    disabled={savingBilling}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg bg-yellow-100 text-yellow-700 hover:bg-yellow-200 dark:bg-yellow-950 dark:text-yellow-400 dark:hover:bg-yellow-900 disabled:opacity-50"
+                  >
+                    <Pause size={14} />
+                    Suspender
+                  </button>
+                )}
+
+                {client.billing_status === "suspended" && (
+                  <button
+                    onClick={() => handleBillingAction("active")}
+                    disabled={savingBilling}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg bg-green-100 text-green-700 hover:bg-green-200 dark:bg-green-950 dark:text-green-400 dark:hover:bg-green-900 disabled:opacity-50"
+                  >
+                    <Play size={14} />
+                    Reactivar
+                  </button>
+                )}
+
+                {client.billing_status !== "cancelled" && (
+                  <button
+                    onClick={() => handleBillingAction("cancelled")}
+                    disabled={savingBilling}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-950 dark:text-red-400 dark:hover:bg-red-900 disabled:opacity-50"
+                  >
+                    <Ban size={14} />
+                    Cancelar Servicio
+                  </button>
+                )}
+              </div>
+            </div>
           </DetailSection>
         </div>
       </div>
-
-      {/* Billing Settings Modal */}
-      {billingModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div
-            className="absolute inset-0 bg-black/40"
-            onClick={() => setBillingModalOpen(false)}
-          />
-          <div className="relative bg-[var(--color-bg-card)] rounded-xl shadow-xl w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto">
-            <button
-              onClick={() => setBillingModalOpen(false)}
-              className="absolute top-4 right-4 p-1 text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] transition-colors"
-            >
-              <X size={20} />
-            </button>
-            <div className="p-6">
-              <h2 className="text-lg font-semibold text-[var(--color-text-primary)] mb-4">
-                Ajustes de facturación
-              </h2>
-              <form
-                onSubmit={handleBillingSettingsSubmit}
-                className="space-y-4"
-              >
-                <div>
-                  <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">
-                    Día de facturación
-                  </label>
-                  <input
-                    type="number"
-                    min="1"
-                    max="31"
-                    value={billingData.billing_day}
-                    onChange={(e) =>
-                      setBillingData({
-                        ...billingData,
-                        billing_day: e.target.value,
-                      })
-                    }
-                    placeholder="15"
-                    className="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-bg-card)] text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">
-                    Días de gracia
-                  </label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={billingData.grace_days}
-                    onChange={(e) =>
-                      setBillingData({
-                        ...billingData,
-                        grace_days: e.target.value,
-                      })
-                    }
-                    placeholder="7"
-                    className="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-bg-card)] text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
-                  />
-                </div>
-                <div className="flex gap-3 justify-end pt-2">
-                  <button
-                    type="button"
-                    onClick={() => setBillingModalOpen(false)}
-                    className="px-4 py-2 text-sm text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]"
-                  >
-                    Cancelar
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={savingBilling}
-                    className="px-4 py-2 text-sm bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary-hover)] disabled:opacity-50"
-                  >
-                    {savingBilling ? "Guardando..." : "Guardar"}
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

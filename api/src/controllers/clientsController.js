@@ -99,11 +99,22 @@ export async function sync(req, res) {
 export async function updateBilling(req, res) {
   try {
     const { id } = req.params;
-    const { billing_status, billing_day, grace_days } = req.body;
-    const result = await clientService.updateBillingStatus(id, billing_status, { billing_day, grace_days });
+    const { billing_status } = req.body;
+    const result = await clientService.updateBillingStatus(id, billing_status);
     res.json(result);
   } catch (error) {
     console.error('Error updating billing:', error);
     res.status(500).json({ error: error.message || 'Failed to update billing' });
+  }
+}
+
+export async function registerPayment(req, res) {
+  try {
+    const { id } = req.params;
+    const result = await clientService.registerPayment(id);
+    res.json(result);
+  } catch (error) {
+    console.error('Error registering payment:', error);
+    res.status(500).json({ error: error.message || 'Failed to register payment' });
   }
 }

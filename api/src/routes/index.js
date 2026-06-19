@@ -52,6 +52,7 @@ router.delete('/clients/:id', authMiddleware, clientsController.remove);
 router.post('/clients/:id/create-admin', authMiddleware, clientsController.createAdmin);
 router.post('/clients/:id/sync', authMiddleware, clientsController.sync);
 router.put('/clients/:id/billing', authMiddleware, validate(UpdateBillingSchema), clientsController.updateBilling);
+router.post('/clients/:id/register-payment', authMiddleware, clientsController.registerPayment);
 
 // Onboarding
 router.get('/onboarding/:token', onboardingController.getByToken);

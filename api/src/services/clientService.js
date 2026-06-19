@@ -434,47 +434,59 @@ export async function syncSections(clientId, sections) {
   return { results, syncStatus }
 }
 
-export async function updateBillingStatus(clientId, billingStatus, extraData = {}) {
-  const client = await Client.findByPk(clientId);
-  if (!client) throw new Error('Cliente no encontrado');
+const BILLING_TRANSITIONS = {
+  [BILLING_STATUS.PENDING_ACTIVATION]: [BILLING_STATUS.ACTIVE],
+  [BILLING_STATUS.ACTIVE]: [BILLING_STATUS.SUSPENDED, BILLING_STATUS.CANCELLED],
+  [BILLING_STATUS.PAST_DUE]: [BILLING_STATUS.ACTIVE, BILLING_STATUS.SUSPENDED, BILLING_STATUS.CANCELLED],
+  [BILLING_STATUS.SUSPENDED]: [BILLING_STATUS.ACTIVE, BILLING_STATUS.CANCELLED],
+  [BILLING_STATUS.CANCELLED]: [],
+}
 
-  const fields = { billingStatus };
-  const now = new Date();
+export async function updateBillingStatus(clientId, action) {
+  const client = await Client.findByPk(clientId)
+  if (!client) throw new Error('Cliente no encontrado')
 
-  if (billingStatus === BILLING_STATUS.ACTIVE) {
-    fields.currentPeriodStart = extraData.currentPeriodStart || now;
-    fields.currentPeriodEnd = extraData.currentPeriodEnd || new Date(now.getFullYear(), now.getMonth() + 1, now.getDate());
-    fields.graceUntil = null;
-    fields.suspendedAt = null;
+  const currentStatus = client.billingStatus
+  const allowed = BILLING_TRANSITIONS[currentStatus] || []
+
+  if (!allowed.includes(action)) {
+    throw new Error(`No se puede transicionar de "${currentStatus}" a "${action}"`)
   }
 
-  if (billingStatus === BILLING_STATUS.SUSPENDED) {
-    fields.suspendedAt = now;
-    fields.graceUntil = null;
+  const fields = { billingStatus: action }
+  const now = new Date()
+
+  if (action === BILLING_STATUS.SUSPENDED) {
+    fields.suspendedAt = now
   }
 
-  if (billingStatus === BILLING_STATUS.PAST_DUE) {
-    const graceDays = extraData.graceDays ?? client.graceDays ?? 7;
-    const graceUntil = new Date(client.currentPeriodEnd);
-    graceUntil.setDate(graceUntil.getDate() + graceDays);
-    fields.graceUntil = graceUntil;
+  if (action === BILLING_STATUS.CANCELLED) {
+    fields.cancelledAt = now
   }
 
-  if (billingStatus === BILLING_STATUS.CANCELLED) {
-    fields.cancelledAt = now;
+  await client.update(fields)
+  return formatClientResponse(client)
+}
+
+export async function registerPayment(clientId) {
+  const client = await Client.findByPk(clientId)
+  if (!client) throw new Error('Cliente no encontrado')
+
+  const currentStatus = client.billingStatus
+  const allowed = [BILLING_STATUS.ACTIVE, BILLING_STATUS.PAST_DUE, BILLING_STATUS.SUSPENDED]
+
+  if (!allowed.includes(currentStatus)) {
+    throw new Error(`No se puede registrar pago desde "${currentStatus}"`)
   }
 
-  if (billingStatus === BILLING_STATUS.PENDING_ACTIVATION) {
-    fields.currentPeriodStart = null;
-    fields.currentPeriodEnd = null;
-    fields.graceUntil = null;
-    fields.suspendedAt = null;
-    fields.cancelledAt = null;
-  }
+  const now = new Date()
+  await client.update({
+    billingStatus: BILLING_STATUS.ACTIVE,
+    currentPeriodStart: now,
+    currentPeriodEnd: addMonth(now),
+    graceUntil: null,
+    suspendedAt: null,
+  })
 
-  if (extraData.billingDay !== undefined) fields.billingDay = extraData.billingDay;
-  if (extraData.graceDays !== undefined) fields.graceDays = extraData.graceDays;
-
-  await client.update(fields);
-  return formatClientResponse(client);
+  return formatClientResponse(client)
 }
