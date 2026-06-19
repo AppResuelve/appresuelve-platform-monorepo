@@ -6,7 +6,7 @@ function addDays(date, days) {
   return result;
 }
 
-function addMonth(date) {
+export function addMonth(date) {
   const result = new Date(date);
   result.setMonth(result.getMonth() + 1);
   return result;

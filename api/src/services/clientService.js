@@ -2,7 +2,7 @@ import { v4 as uuidv4 } from 'uuid';
 import db from '../models/index.js';
 import { deleteClientFiles } from './storage/index.js';
 import { ONBOARDING_STATUS, ADMIN_STATUS, BILLING_STATUS } from '../constants/client.js';
-import { activateBilling } from './billingService.js';
+import { activateBilling, addMonth } from './billingService.js';
 
 const { Client, ClientForm, ClientDocument } = db;
 
