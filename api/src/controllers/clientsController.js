@@ -84,6 +84,28 @@ export async function createAdmin(req, res) {
   }
 }
 
+export async function getAdminStatus(req, res) {
+  try {
+    const { id } = req.params
+    const result = await clientService.getAdminStatusFromClient(id)
+    res.json(result)
+  } catch (error) {
+    console.error('Error getting admin status:', error)
+    res.status(500).json({ error: error.message || 'Failed to get admin status' })
+  }
+}
+
+export async function resendActivation(req, res) {
+  try {
+    const { id } = req.params
+    const result = await clientService.resendActivationForClient(id)
+    res.json(result)
+  } catch (error) {
+    console.error('Error resending activation:', error)
+    res.status(500).json({ error: error.message || 'Failed to resend activation' })
+  }
+}
+
 export async function sync(req, res) {
   try {
     const { id } = req.params

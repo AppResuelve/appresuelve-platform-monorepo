@@ -6,6 +6,7 @@ export const ONBOARDING_STATUS = {
 
 export const ADMIN_STATUS = {
   PENDING: 'pending',
+  PENDING_ACTIVATION: 'pending_activation',
   ACTIVE: 'active',
   ERROR: 'error',
 }

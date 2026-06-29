@@ -320,13 +320,83 @@ export async function createAdminForClient(clientId) {
     throw new Error(err.error || 'Error al crear admin')
   }
 
-  await client.update({ adminStatus: ADMIN_STATUS.ACTIVE })
+  await client.update({ adminStatus: ADMIN_STATUS.PENDING_ACTIVATION })
 
   if (client.billingStatus === BILLING_STATUS.PENDING_ACTIVATION) {
     await activateBilling(client)
   }
 
   return client
+}
+
+export async function getAdminStatusFromClient(clientId) {
+  const client = await Client.findByPk(clientId)
+  if (!client) throw new Error('Cliente no encontrado')
+  if (!client.apiUrl) throw new Error('El cliente no tiene api_url configurada')
+
+  const secret = process.env.APPRESUELVE_SECRET
+  if (!secret) throw new Error('APPRESUELVE_SECRET no configurado')
+
+  const apiBase = client.apiUrl.replace(/\/+$/, '')
+
+  let res
+  try {
+    res = await fetch(`${apiBase}/api/internal/admin-status`, {
+      headers: { Authorization: `Bearer ${secret}` },
+    })
+  } catch (fetchErr) {
+    throw new Error(`No se pudo conectar con la API del cliente. Verificá que la URL sea correcta y el proyecto esté online.`)
+  }
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: `HTTP ${res.status}` }))
+    throw new Error(err.error || 'Error al consultar estado del admin')
+  }
+
+  const data = await res.json()
+
+  // Si el admin ya está activo, actualizar local
+  if (data.exists && data.status === 'active' && client.adminStatus !== ADMIN_STATUS.ACTIVE) {
+    await client.update({ adminStatus: ADMIN_STATUS.ACTIVE })
+  }
+
+  return { ...data, localStatus: client.adminStatus }
+}
+
+export async function resendActivationForClient(clientId) {
+  const client = await Client.findByPk(clientId)
+  if (!client) throw new Error('Cliente no encontrado')
+  if (!client.apiUrl) throw new Error('El cliente no tiene api_url configurada')
+
+  const secret = process.env.APPRESUELVE_SECRET
+  if (!secret) throw new Error('APPRESUELVE_SECRET no configurado')
+
+  const apiBase = client.apiUrl.replace(/\/+$/, '')
+
+  let res
+  try {
+    res = await fetch(`${apiBase}/api/internal/resend-activation`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${secret}`,
+      },
+    })
+  } catch (fetchErr) {
+    throw new Error(`No se pudo conectar con la API del cliente. Verificá que la URL sea correcta y el proyecto esté online.`)
+  }
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: `HTTP ${res.status}` }))
+    throw new Error(err.error || 'Error al reenviar activación')
+  }
+
+  // Actualizar local: si no estaba en pending_activation, actualizar
+  if (client.adminStatus !== ADMIN_STATUS.PENDING_ACTIVATION) {
+    await client.update({ adminStatus: ADMIN_STATUS.PENDING_ACTIVATION })
+  }
+
+  return { success: true }
 }
 
 export async function syncSections(clientId, sections) {

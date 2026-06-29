@@ -334,11 +334,38 @@ function Clients({ view = "onboarding" }) {
       await apiFetch(`/clients/${client.id}/create-admin`, { method: "POST" });
       setClients((prev) =>
         prev.map((c) =>
-          c.id === client.id ? { ...c, admin_status: "active" } : c,
+          c.id === client.id ? { ...c, admin_status: "pending_activation" } : c,
         ),
       );
     } catch (err) {
       Alert.fire({ message: err.message || 'Error al crear admin', type: 'error' })
+    }
+  }
+
+  async function handleCheckAdminStatus(client) {
+    try {
+      const data = await apiFetch(`/clients/${client.id}/admin-status`);
+      if (data.exists && data.status === "active") {
+        setClients((prev) =>
+          prev.map((c) =>
+            c.id === client.id ? { ...c, admin_status: "active" } : c,
+          ),
+        );
+        Alert.fire({ message: '¡Admin activo!', type: 'success' })
+      } else {
+        Alert.fire({ message: `Estado: ${data.status || 'pendiente'}. Aún no activó su cuenta.`, type: 'info' })
+      }
+    } catch (err) {
+      Alert.fire({ message: err.message || 'Error al verificar', type: 'error' })
+    }
+  }
+
+  async function handleResendActivation(client) {
+    try {
+      await apiFetch(`/clients/${client.id}/resend-activation`, { method: "POST" });
+      Alert.fire({ message: 'Correo de activación reenviado', type: 'success' })
+    } catch (err) {
+      Alert.fire({ message: err.message || 'Error al reenviar', type: 'error' })
     }
   }
 
@@ -533,6 +560,27 @@ function Clients({ view = "onboarding" }) {
                           <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-400 whitespace-nowrap">
                             ✗ Error
                           </span>
+                        ) : client.admin_status === "pending_activation" ? (
+                          <div className="flex items-center gap-1.5">
+                            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-400 whitespace-nowrap">
+                              <Clock size={11} />
+                              Pendiente
+                            </span>
+                            <button
+                              onClick={(e) => { e.stopPropagation(); handleResendActivation(client); }}
+                              className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium bg-indigo-50 dark:bg-indigo-950 text-[var(--color-primary)] hover:bg-indigo-100 dark:hover:bg-indigo-900 transition-colors whitespace-nowrap"
+                              title="Reenviar correo de activación"
+                            >
+                              Reenviar
+                            </button>
+                            <button
+                              onClick={(e) => { e.stopPropagation(); handleCheckAdminStatus(client); }}
+                              className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors whitespace-nowrap"
+                              title="Verificar si ya activó"
+                            >
+                              <RefreshCw size={11} />
+                            </button>
+                          </div>
                         ) : client.api_url ? (
                           <button
                             onClick={(e) => { e.stopPropagation(); handleCreateAdmin(client); }}

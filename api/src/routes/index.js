@@ -50,6 +50,8 @@ router.get('/clients/by-token/:token', clientsController.getByToken); // públic
 router.put('/clients/:id', authMiddleware, validate(UpdateClientSchema), clientsController.update);
 router.delete('/clients/:id', authMiddleware, clientsController.remove);
 router.post('/clients/:id/create-admin', authMiddleware, clientsController.createAdmin);
+router.get('/clients/:id/admin-status', authMiddleware, clientsController.getAdminStatus);
+router.post('/clients/:id/resend-activation', authMiddleware, clientsController.resendActivation);
 router.post('/clients/:id/sync', authMiddleware, clientsController.sync);
 router.put('/clients/:id/billing', authMiddleware, validate(UpdateBillingSchema), clientsController.updateBilling);
 router.post('/clients/:id/register-payment', authMiddleware, clientsController.registerPayment);
