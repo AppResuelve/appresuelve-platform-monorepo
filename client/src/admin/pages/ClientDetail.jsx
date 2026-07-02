@@ -12,6 +12,7 @@ import {
   Pause,
   Play,
   Ban,
+  Save,
 } from "lucide-react";
 import { apiFetch } from "../../shared/api.js";
 import { SERVICE_TYPES } from "../../shared/constants.js";
@@ -105,6 +106,10 @@ export default function ClientDetail() {
   const [saving, setSaving] = useState(false);
 
   const [savingBilling, setSavingBilling] = useState(false);
+
+  const [editingFee, setEditingFee] = useState(false);
+  const [feeValue, setFeeValue] = useState('');
+  const [feeSaving, setFeeSaving] = useState(false);
 
   useEffect(() => {
     fetchClient();
@@ -201,6 +206,23 @@ export default function ClientDetail() {
       });
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function saveFee() {
+    setFeeSaving(true);
+    try {
+      const updated = await apiFetch(`/clients/${client.id}`, {
+        method: "PUT",
+        body: JSON.stringify({ monthlyFee: feeValue ? Number(feeValue) : null }),
+      });
+      setClient((prev) => ({ ...prev, ...updated }));
+      setEditingFee(false);
+      Alert.fire({ message: "Importe actualizado", type: "success" });
+    } catch (err) {
+      Alert.fire({ message: err.message || "Error al actualizar", type: "error" });
+    } finally {
+      setFeeSaving(false);
     }
   }
 
@@ -572,6 +594,54 @@ export default function ClientDetail() {
         {/* Right column — sticky */}
         <div className="md:sticky md:top-6">
           <DetailSection title="Facturación">
+            <div className="md:col-span-2">
+              <dt className="text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider">
+                Importe mensual
+              </dt>
+              <dd className="mt-1">
+                {editingFee ? (
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="number"
+                      value={feeValue}
+                      onChange={(e) => setFeeValue(e.target.value)}
+                      className="w-32 px-2 py-1 text-sm border border-[var(--color-border)] rounded bg-[var(--color-surface)] text-[var(--color-text-primary)]"
+                      autoFocus
+                    />
+                    <button
+                      onClick={saveFee}
+                      disabled={feeSaving}
+                      className="p-1 rounded hover:bg-green-100 dark:hover:bg-green-950 text-green-600 transition-colors"
+                    >
+                      <Save size={14} />
+                    </button>
+                    <button
+                      onClick={() => setEditingFee(false)}
+                      className="p-1 rounded hover:bg-red-100 dark:hover:bg-red-950 text-red-500 transition-colors"
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-[var(--color-text-primary)]">
+                      {client.monthly_fee != null
+                        ? `$ ${Number(client.monthly_fee).toLocaleString("es-AR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                        : "—"}
+                    </span>
+                    <button
+                      onClick={() => {
+                        setFeeValue(client.monthly_fee || '');
+                        setEditingFee(true);
+                      }}
+                      className="p-0.5 rounded hover:bg-[var(--color-bg-section)] text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] transition-colors"
+                    >
+                      <Pencil size={14} />
+                    </button>
+                  </div>
+                )}
+              </dd>
+            </div>
             <div className="md:col-span-2">
               <dt className="text-xs font-medium text-[var(--color-text-muted)] uppercase tracking-wider">
                 Estado

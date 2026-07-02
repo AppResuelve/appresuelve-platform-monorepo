@@ -110,6 +110,12 @@ export default (sequelize, DataTypes) => {
         type: DataTypes.INTEGER,
         field: 'billing_day',
       },
+      monthlyFee: {
+        type: DataTypes.DECIMAL(10, 2),
+        allowNull: true,
+        defaultValue: null,
+        field: 'monthly_fee',
+      },
       currentPeriodStart: {
         type: DataTypes.DATE,
         field: 'current_period_start',

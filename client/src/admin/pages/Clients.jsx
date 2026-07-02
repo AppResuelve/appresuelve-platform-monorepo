@@ -114,6 +114,7 @@ function Clients({ view = "onboarding" }) {
     address: "",
     serviceType: "",
     apiUrl: "",
+    monthlyFee: "",
   });
   const [creating, setCreating] = useState(false);
   const [lastCreated, setLastCreated] = useState(null);
@@ -766,6 +767,18 @@ function Clients({ view = "onboarding" }) {
                         className="flex-1 px-4 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-bg-card)] text-[var(--color-text-primary)] font-mono focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
                       />
                     </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-[var(--color-text-secondary)] mb-1">
+                      Importe mensual (opcional)
+                    </label>
+                    <input
+                      type="number"
+                      value={formData.monthlyFee}
+                      onChange={(e) => setFormData({ ...formData, monthlyFee: e.target.value })}
+                      placeholder="5000"
+                      className="w-full px-4 py-2 border border-[var(--color-border)] rounded-lg bg-[var(--color-bg-card)] text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
+                    />
                   </div>
                 </>
               }

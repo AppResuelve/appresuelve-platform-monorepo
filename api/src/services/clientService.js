@@ -62,6 +62,7 @@ function formatClientResponse(client, extra = {}) {
     frontend_repo: client.frontendRepo,
     billing_status: client.billingStatus,
     billing_day: client.billingDay,
+    monthly_fee: client.monthlyFee,
     current_period_start: client.currentPeriodStart,
     current_period_end: client.currentPeriodEnd,
     grace_days: client.graceDays,
@@ -94,7 +95,7 @@ function calculateCompletion(formData, documents) {
   return Math.round((filledSections / sections.length) * total);
 }
 
-export async function createInvite({ businessName, email, address, serviceType, apiUrl, phone, description, domain, notes }) {
+export async function createInvite({ businessName, email, address, serviceType, apiUrl, phone, description, domain, notes, monthlyFee }) {
   const inviteToken = generateToken();
   const cloudinaryPrefix = generateCloudinaryPrefix();
   const slug = serviceType ? generateServiceSlug(serviceType) : null;
@@ -110,6 +111,7 @@ export async function createInvite({ businessName, email, address, serviceType, 
     description: description || null,
     domain: domain || null,
     notes: notes || null,
+    monthlyFee: monthlyFee || null,
     cloudinaryFolderPrefix: cloudinaryPrefix,
     gitRepo: repoName,
     backendRepo: repoName,
@@ -260,6 +262,7 @@ export async function updateClient(clientId, data) {
   if (data.description !== undefined) fields.description = data.description || null;
   if (data.domain !== undefined) fields.domain = data.domain || null;
   if (data.notes !== undefined) fields.notes = data.notes || null;
+  if (data.monthlyFee !== undefined) fields.monthlyFee = data.monthlyFee || null;
 
   await client.update(fields);
 
