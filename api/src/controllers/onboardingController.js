@@ -12,7 +12,8 @@ export async function getByToken(req, res) {
     res.json(data);
   } catch (error) {
     console.error('Error fetching onboarding data:', error);
-    res.status(500).json({ error: 'Failed to fetch data' });
+    const status = error.status || 500;
+    res.status(status).json({ error: error.message || 'Failed to fetch data' });
   }
 }
 
@@ -30,6 +31,7 @@ export async function save(req, res) {
     res.json({ success: true, message: 'Data saved successfully' });
   } catch (error) {
     console.error('Error saving onboarding data:', error);
-    res.status(500).json({ error: 'Failed to save data' });
+    const status = error.status || 500;
+    res.status(status).json({ error: error.message || 'Failed to save data' });
   }
 }

@@ -1,4 +1,5 @@
 import db from '../models/index.js';
+import { ADMIN_STATUS } from '../constants/client.js';
 
 const { Client, ClientForm } = db;
 
@@ -17,6 +18,13 @@ export async function getByToken(token) {
 
   if (!client) return null;
 
+  if (client.adminStatus === ADMIN_STATUS.ACTIVE) {
+    throw Object.assign(
+      new Error('El enlace de onboarding ya no está disponible'),
+      { status: 410 },
+    );
+  }
+
   return {
     id: client.id,
     business_name: client.businessName,
@@ -32,6 +40,13 @@ export async function saveOnboarding(token, data) {
   });
 
   if (!client) return null;
+
+  if (client.adminStatus === ADMIN_STATUS.ACTIVE) {
+    throw Object.assign(
+      new Error('El enlace de onboarding ya no está disponible'),
+      { status: 410 },
+    );
+  }
 
   const t = await db.sequelize.transaction();
   try {
